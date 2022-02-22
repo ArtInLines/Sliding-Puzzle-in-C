@@ -4,6 +4,16 @@ int distance(int x, int y);
 
 
 
+// Board:
+
+int is_solvable(int len, int *board);
+
+int* create_initial_board(int column_size, int row_size, int variance);
+
+void show_board(int column_size, int row_size, int *board);
+
+
+
 // Priorities / Heuristics:
 
 // Hamming priority function. The number of blocks in the wrong position, plus the number of moves made so far to get to the state. Intutively, a state with a small number of blocks in the wrong position is close to the goal state, and we prefer a state that have been reached using a small number of moves.
