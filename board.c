@@ -3,9 +3,38 @@
 #include "util.h"
 
 int is_solvable(int len, int *board) {
-    for (int i = 0; i < len; i++) {
-        // ...
+    if (count_transpositions(len, board) % 2) return 0; // For odd amounts of transpositions, the puzzle is not solvable
+    else return 1; // For even amounts of transpositions, the puzzle is solvable
+    
+    // See ./literature for mathematical proves of this fact!
+}
+
+int count_transpositions(int len, int *board) {
+    int i, j, index, cell, transpositions_amount = 0;
+    // Create copy of board without empty field
+    int *board_copy = malloc((len-1) * sizeof(int));
+    for (i = 0, j = 0; i < len; i++) {
+        if (!board[i]) continue;
+        board_copy[j] = board[i];
+        j++;
     }
+    
+    // Loop through copied board
+    // When reaching an element out of order:
+        // Swap the number with the number at the index, that this number should be at
+        // i.e. if number 5 is at the first index, swap 5 with the number at the 5th index
+        // Increase the amount of transpositions   
+    for (i = 0; i < len-1; i++) {
+        while (board_copy[i]-1 != i) {
+            printf("(%i %i)  -  (%i %i)  -  %i\n", i, board_copy[i]-1, board_copy[i], board_copy[board_copy[i]-1], transpositions_amount+1);
+            
+            swap_ints(&board_copy[i], &board_copy[board_copy[i]-1]);
+            transpositions_amount++;
+        }
+    }
+
+    free(board_copy);
+    return transpositions_amount;
 }
 
 int* create_initial_board(int column_size, int row_size, int variance) {

@@ -48,3 +48,53 @@ void test_priority() {
     
     printf("Tests ended with %i our of %i succesful tests", test_amounts*2-fails, test_amounts*2);
 }
+
+void test_solvable() {
+    int fails = 0;
+    int test_amounts = 3;
+    int tests[] = {
+    // expected_transpositions, expected_solvable, len,
+        // *board
+        1, 0, 16,
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 15, 14, 0,
+        5, 0, 16,
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 0, 10, 11,
+            13, 15, 14, 12,
+        4, 1, 9,
+            1, 3, 0,
+            4, 2, 5,
+            7, 8, 6
+    };
+    
+    int i, j, expected_transpositions, expected_solvable, transpositions_res, solvable_res, len, index = 0;
+    
+    for (i = 0; i < test_amounts; i++) {
+        expected_transpositions = tests[index++];
+        expected_solvable = tests[index++];
+        len = tests[index++];
+        
+        // transpositions_res = count_transpositions(len, &tests[index]);
+        solvable_res = is_solvable(len, &tests[index]);
+        
+        // if (transpositions_res == expected_transpositions) printf("count_permutaions() #%i successful\n", i+1);
+        // else {
+        //     fails++;
+        //     printf("count_transpositions() #%i unsuccessful  -  Received %i instead of %i\n", i+1, transpositions_res, expected_transpositions);
+        // }
+        
+        if (solvable_res == expected_solvable) printf("is_solvable() test #%i successful\n", i+1);
+        else {
+            fails++;
+            printf("is_solvable() test #%i unsuccessful  -  Received %i instead of %i\n", i+1, solvable_res, expected_solvable);
+        }
+        
+        index += len;
+    }
+    
+    printf("Tests ended with %i our of %i succesful tests", test_amounts*2-fails, test_amounts*2);
+}

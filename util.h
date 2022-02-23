@@ -2,6 +2,7 @@
 
 int distance(int x, int y);
 
+int swap_ints(int *x, int *y);
 
 
 // Board:
@@ -12,6 +13,9 @@ int* create_initial_board(int column_size, int row_size, int variance);
 
 void show_board(int column_size, int row_size, int *board);
 
+int count_transpositions(int len, int *board);
+
+int is_solvable(int len, int *board);
 
 
 // Priorities / Heuristics:
@@ -23,7 +27,8 @@ int hamming(int moves_amount, int column_size, int row_size, int *board);
 int manhattan(int moves_amount, int column_size, int row_size, int *board);
 
 
-
 // Tests:
 
 void test_priority();
+
+void test_solvable();
