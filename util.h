@@ -1,9 +1,19 @@
+// Play:
+
+int init_game(int column_size, int row_size, int *board);
+
+int play_turn(int direction, int *board);
+
+int get_opposite_direction(int direction);
+
+
 // Utilities:
 
 int distance(int x, int y);
 
 int swap_ints(int *x, int *y);
 
+int* index_to_pos(int index, int column_size);
 
 // Board:
 
