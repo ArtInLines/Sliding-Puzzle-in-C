@@ -17,19 +17,19 @@ int init_game(int column_size, int row_size, int *board, int inverted) {
     g_empty_field_pos = index_to_pos(i, g_column_size);
 }
 
-void move(int *pos) {
-    int posIndex = pos_to_index(pos, g_column_size);
-    int emptyIndex = pos_to_index(g_empty_field_pos, g_column_size);
+void move(int *pos1, int *pos2, int *board) {
+    int posIndex = pos_to_index(pos1, g_column_size);
+    int emptyIndex = pos_to_index(pos2, g_column_size);
     
-    swap_ints(&g_board[posIndex], &g_board[emptyIndex]);
-    g_empty_field_pos[0] = pos[0];
-    g_empty_field_pos[1] = pos[1];
+    swap_ints(&board[posIndex], &board[emptyIndex]);
+    pos2[0] = pos1[0];
+    pos2[1] = pos1[1];
 }
 
-int play_turn(int direction) {
+int play_turn_with_board(int direction, int *board, int *empty_field) {
     int affected_field[2];
-    affected_field[0] = g_empty_field_pos[0];
-    affected_field[1] = g_empty_field_pos[1];
+    affected_field[0] = empty_field[0];
+    affected_field[1] = empty_field[1];
     
     switch (direction) {
     case UP:
@@ -48,7 +48,7 @@ int play_turn(int direction) {
         return ILLEGAL_DIRECTION;
     }
     
-    printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], g_empty_field_pos[0], g_empty_field_pos[1]);
+    printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
     
     // Check if turn is possible
     if (affected_field[0] < 0 || !affected_field[1] < 0 || affected_field[0] >= g_row_size || affected_field[1] >= g_column_size) return MOVE_OUTSIDE_BORDERS;
@@ -60,8 +60,12 @@ int play_turn(int direction) {
     if (g_moved_back >= 2) return REPEATED_MOVE_BACK;
     g_last_direction = direction;
     
-    move(affected_field);
+    move(affected_field, empty_field, board);
     return SUCCESS;
+}
+
+int play_turn(int direction) {
+    return play_turn_with_board(direction, g_board, g_empty_field_pos);
 }
 
 int get_opposite_direction(int direction) {
@@ -82,6 +86,9 @@ int get_opposite_direction(int direction) {
 int get_direction() {
     char key; int direction;
     GET_CHAR_LOOP:
+        printf("\n");
+        printf("To let the computer help you with the next move, press e\n");
+        printf("To let the computer finish this puzzle, press 'q\n");
         printf("Make a move using w-a-s-d:  ");
         key = getchar();
         while ('\n'!=getchar());
@@ -100,18 +107,28 @@ int get_direction() {
             case 'd':
                 direction = RIGHT;
                 break;
+            case 'e':
+                direction = GETHELP;
+                break;
+            case 'q':
+                direction = FINISH;
+                break;
             default:
                 direction = ERROR;
                 break;
         }
         if (g_inverted) direction = get_opposite_direction(direction);
     if (direction == ERROR) {
-        printf("You donkey, press w, a, s, or d! Try again!\n");
+        printf("You donkey, how hard is it to follow instructions! Try again!\n");
         goto GET_CHAR_LOOP;
     }
     return direction;
 }
 
-void A_star_next_turn() {
+int* A_star() {
+    int i, len = g_column_size * g_row_size;
+    int *og_board = malloc(len * sizeof(int));
+    for (i = 0; i < len; i++) og_board[i] = g_board[i];
     
+    // TODO
 }

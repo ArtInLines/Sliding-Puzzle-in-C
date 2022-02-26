@@ -2,26 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void let_player_move() {
-    int direction, play_turn_return_code = -1;
-    while (play_turn_return_code != SUCCESS) {
-        direction = get_direction();
-        play_turn_return_code = play_turn(direction);
-        switch (play_turn_return_code) {
-            case MOVE_OUTSIDE_BORDERS:
-                printf("The empty field can't be moved outside the puzzle's borders! Try again!\n");
-                break;
-            
-            case REPEATED_MOVE_BACK:
-                printf("This move was restricted to stop you from moving back and forth forever in a loop. Try again!\n");
-                break;
-                
-            case ILLEGAL_DIRECTION:
-                printf("Whatever you did, this is not allowed! Try again!\n");
-                break;
-        }
-    }
-}
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
@@ -37,20 +23,46 @@ int main() {
     show_board(column_size, row_size, board);
     
     
-    // Start A* algorithm
-    // Each step of A*, show new board state (with a text saying the sliding-direction)
-        // Show backtracking as steps too
-    
-    
-    while (!is_solved(len, board)) {
+    while (is_player_turn && !is_solved(len, board)) {
         // Get direction & play
-        if (is_player_turn) let_player_move();
-        else A_star_next_step();
+        int direction, play_turn_return_code = -1;
+        while (play_turn_return_code != SUCCESS) {
+            direction = get_direction();
+            
+            if (direction == GETHELP) direction = get_next_move();
+            else if (direction == FINISH) goto FINISH_PUZZLE;
+            
+            play_turn_return_code = play_turn(direction);
+            switch (play_turn_return_code) {
+                case MOVE_OUTSIDE_BORDERS:
+                    printf("The empty field can't be moved outside the puzzle's borders! Try again!\n");
+                    break;
+                
+                case REPEATED_MOVE_BACK:
+                    printf("This move was restricted to stop you from moving back and forth forever in a loop. Try again!\n");
+                    break;
+                    
+                case ILLEGAL_DIRECTION:
+                    printf("Whatever you did, this is not allowed! Try again!\n");
+                    break;
+            }
+        }
         
         turn_counter++;
         // Show board
         clear_screen();
         show_board(column_size, row_size, board);
+    }
+    
+    if (!is_player_turn) {
+    FINISH_PUZZLE:
+        printf("Processing...");
+        int *path = A_star();
+        int i = 0;
+        while (path[i] != -1) {
+            if (i) sleep(0.1);
+            play_turn(path[i]);
+        }
     }
     
     printf("\nThe puzzle was solved in %i moves! \\o/", turn_counter);
