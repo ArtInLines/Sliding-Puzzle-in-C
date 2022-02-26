@@ -2,7 +2,7 @@
 
 int init_game(int column_size, int row_size, int *board);
 
-int play_turn(int direction, int *board);
+int play_turn(int direction);
 
 int get_opposite_direction(int direction);
 
