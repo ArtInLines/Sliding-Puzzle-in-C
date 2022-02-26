@@ -27,26 +27,8 @@ void move(int *pos1, int *pos2, int *board) {
 }
 
 int play_turn_with_board(int direction, int *board, int *empty_field) {
-    int affected_field[2];
-    affected_field[0] = empty_field[0];
-    affected_field[1] = empty_field[1];
-    
-    switch (direction) {
-    case UP:
-        affected_field[0]--;
-        break;
-    case DOWN:
-        affected_field[0]++;
-        break;
-    case RIGHT:
-        affected_field[1]++;
-        break;
-    case LEFT:
-        affected_field[1]--;
-        break;
-    default:
-        return ILLEGAL_DIRECTION;
-    }
+    int *affected_field = get_new_pos(empty_field, direction);
+    if (affected_field[0] == -1) return ILLEGAL_DIRECTION;
     
     printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
     
@@ -125,10 +107,93 @@ int get_direction() {
     return direction;
 }
 
-int* A_star() {
-    int i, len = g_column_size * g_row_size;
-    int *og_board = malloc(len * sizeof(int));
-    for (i = 0; i < len; i++) og_board[i] = g_board[i];
+int* copy_board(int len, int *board) {
+    int *new_board = malloc(len * sizeof(int));
+    for (int i = 0; i < len; i++) new_board[i] = board[i];
+    return new_board;
+}
+
+// Exclusively A*
+
+// The Data Fields of each item are structured in the following way:
+    // 0: previous node
+    // 1: moves amount
+    // 2: direction
+    // 3-4: empty field position
+    // 5+: board
     
-    // TODO
+int get_data_size(int len){
+    return (int) sizeof(int) * (len + 5);
+}
+
+int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_field, int *board) {
+    int *data = malloc(get_data_size(len));
+    int i = 0;
+    data[i++] = prev_node;
+    data[i++] = moves_amount;
+    data[i++] = dir;
+    data[i++] = empty_field[0];
+    data[i++] = empty_field[1];
+    for (int diff = i; i < len; i++) data[i] = g_board[i-diff];
+}
+
+int* A_star() {
+    int i, prev_node, dir, moves_amount, turn_return, len = g_column_size * g_row_size;
+    int *data, *current_board, *next_board, current_empty_field[2], directions[4] = {UP, RIGHT, DOWN, LEFT};
+    listItem *current_node;
+    
+    data = create_data(len, 0, 0, -1, g_empty_field_pos, g_board);
+    int data_size = get_data_size(len);
+    
+    listItem *node;
+    listItem *root = create_item(get_priority(0, g_column_size, g_row_size, g_board), data, data_size);
+    listItem *used_stack = create_item(0, data, data_size);
+    
+    while (1) {
+        i = 0;
+        data = root->data;
+        prev_node = data[i++];
+        moves_amount = data[i++];
+        dir = data[i++];
+        current_empty_field[0] = data[i++];
+        current_empty_field[1] = data[i++];
+        current_board = &data[i++];
+        
+        // Add new nodes for each direction (skipping illegal directions)
+        for (i = 0; i < 4; i++) {
+            next_board = copy_board(len, current_board);
+            turn_return = play_turn_with_board(directions[i], next_board, current_empty_field);
+            if (turn_return != SUCCESS) continue;
+            data = create_data(len, root->id, moves_amount+1, directions[i], get_new_pos(current_empty_field, directions[i]), next_board);
+            node = create_item(get_priority(moves_amount+1, g_column_size, g_row_size, next_board), data, data_size);
+            insert_sorted(root, node, 1);
+        }
+        
+        insert(used_stack, copy_item(root, 1));
+        root = shift(root);
+        
+        if (root->weight == 0) break;
+    }
+    
+    i = 0;
+    int *path = malloc((moves_amount+2) * sizeof(int));
+    do {
+        path[i++] = (root->data)[2];
+        prev_node = (root->data)[0];
+    } while(prev_node);
+    path[i] = 0;
+    
+    return path;
+}
+
+int* A_star_mem_efficient() {
+    // A* but without storing a new board_copy for each node
+    // instead only the direction for that node is stored
+    // (as well as the parent node)
+    // with the actual board being created on the fly from the og board.
+}
+
+int get_next_move() {
+    int *path = A_star();
+    return path[0];
 }

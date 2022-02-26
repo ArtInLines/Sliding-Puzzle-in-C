@@ -56,6 +56,31 @@ int* create_initial_board(int column_size, int row_size, int variance) {
     return board;
 }
 
+int* get_new_pos(int *old_pos, int dir) {
+    int *new_pos = malloc(2 * sizeof(int));
+    new_pos[0] = old_pos[0];
+    new_pos[1] = old_pos[1];
+    
+    switch (dir) {
+        case UP:
+            new_pos[0]--;
+            break;
+        case DOWN:
+            new_pos[0]++;
+            break;
+        case RIGHT:
+            new_pos[1]++;
+            break;
+        case LEFT:
+            new_pos[1]--;
+            break;
+        default:
+            new_pos[0] = -1;
+            new_pos[1] = -1;
+    }
+    return new_pos;
+}
+
 
 // Print Board:
 

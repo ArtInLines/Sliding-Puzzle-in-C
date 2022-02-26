@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
+// #ifdef _WIN32
+// #include <windows.h>
+// #else
+// #include <unistd.h>
+// #endif
 
 
 // Main Function
@@ -60,7 +60,12 @@ int main() {
         int *path = A_star();
         int i = 0;
         while (path[i] != -1) {
-            if (i) sleep(0.1);
+            // if (i) sleep(100);
+            if (i) {
+                printf("Press any key to continue");
+                getchar();
+                putchar((int) '\n');
+            }
             play_turn(path[i]);
         }
     }

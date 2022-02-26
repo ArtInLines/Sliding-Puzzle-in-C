@@ -1,9 +1,10 @@
 // Enums & Structs
 
 struct list_el {
+    int id;            // Unique ID of each element
     int weight;                 // weight -> sorted in ascending order
-    void *data;                 // Arbitrary data payload
-    size_t size;                // Size of the data payload
+    int *data;                  // Arbitrary data payload
+    int size;                   // Size of the data payload
     struct list_el* next;       // Pointer to next item
     struct list_el* prev;       // Pointer to previous item
     };
@@ -43,6 +44,10 @@ void move(int *pos1, int *pos2, int *board);
 
 int* A_star();
 
+int* A_star_mem_efficient();
+
+int get_next_move();
+
 
 // Utilities:
 
@@ -56,19 +61,26 @@ int pos_to_index(int *pos, int column_size);
 
 void clear_screen();
 
+int rand_id();
+
 void print_list(listItem *root);
 
 void print_list_item(listItem *item);
 
-listItem* insert_sorted(listItem *root, listItem *new_el);
+listItem* insert_sorted(listItem *root, listItem *new_el, int skip_root);
 
 listItem* sort(listItem *root);
 
-listItem* remove(listItem *el);
+void remove_item(listItem *el);
+
+listItem* shift(listItem *root);
 
 listItem* insert(listItem *last_item, listItem *new_el);
 
-listItem* create_item(int weight, void *data, size_t size);
+listItem* create_item(int weight, void *data, int size);
+
+listItem* copy_item(listItem *item, int keep_id);
+
 
 // Board:
 
@@ -84,6 +96,8 @@ int count_transpositions(int len, int *board);
 
 int get_direction();
 
+int* get_new_pos(int *old_pos, int dir);
+
 
 // Priorities / Heuristics:
 
@@ -92,6 +106,8 @@ int hamming(int moves_amount, int column_size, int row_size, int *board);
 
 // Manhattan priority function. The sum of the Manhattan distances (sum of the vertical and horizontal distance) from the blocks to their goal positions, plus the number of moves made so far to get to the state.
 int manhattan(int moves_amount, int column_size, int row_size, int *board);
+
+int get_priority(int moves_amount, int column_size, int row_size, int *board);
 
 
 // Tests:

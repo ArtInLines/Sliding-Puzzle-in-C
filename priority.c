@@ -1,6 +1,10 @@
 #include "util.h"
 // #include <stdio.h> // For debugging
 
+int get_priority(int moves_amount, int column_size, int row_size, int *board) {
+    return hamming(moves_amount, column_size, row_size, board);
+}
+
 // Hamming priority function. The number of blocks in the wrong position, plus the number of moves made so far to get to the state. Intutively, a state with a small number of blocks in the wrong position is close to the goal state, and we prefer a state that have been reached using a small number of moves.
 int hamming(int moves_amount, int column_size, int row_size, int *board) {
     for (int i = 0, len = column_size * row_size; i < len; i++) {
