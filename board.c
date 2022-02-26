@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include "util.h"
 
+int is_solved(int len, int *board) {
+    int i = 0;
+    while (i < len-1) if (++i != board[i]) return 0;
+    // Last field doesn't have to be checked,
+    // as long as all others are placed correctly
+    return 1;
+}
+
 int is_solvable(int len, int *board) {
     if (count_transpositions(len, board) % 2) return 0; // For odd amounts of transpositions, the puzzle is not solvable
     else return 1; // For even amounts of transpositions, the puzzle is solvable
@@ -43,6 +51,8 @@ int* create_initial_board(int column_size, int row_size, int variance) {
     int i = 0;
     while (i < len) board[i] = ++i;
     board[len-1] = 0;
+    swap_ints(&board[len-1], &board[len-1-column_size]);
+    swap_ints(&board[len-1-column_size], &board[len-2-column_size]);
     return board;
 }
 

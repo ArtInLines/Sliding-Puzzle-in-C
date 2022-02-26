@@ -1,10 +1,32 @@
+// Enums
+
+enum direction {
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT,
+    ERROR
+};
+
+enum play_turn_return_codes {
+    SUCCESS,
+    MOVE_OUTSIDE_BORDERS,
+    REPEATED_MOVE_BACK,
+    ILLEGAL_DIRECTION
+};
+
+
 // Play:
 
-int init_game(int column_size, int row_size, int *board);
+int init_game(int column_size, int row_size, int *board, int inverted);
 
 int play_turn(int direction);
 
 int get_opposite_direction(int direction);
+
+int get_direction();
+
+void move(int *pos);
 
 
 // Utilities:
@@ -15,7 +37,11 @@ int swap_ints(int *x, int *y);
 
 int* index_to_pos(int index, int column_size);
 
+int pos_to_index(int *pos, int column_size);
+
 // Board:
+
+int is_solved(int len, int *board);
 
 int is_solvable(int len, int *board);
 
@@ -25,7 +51,7 @@ void show_board(int column_size, int row_size, int *board);
 
 int count_transpositions(int len, int *board);
 
-int is_solvable(int len, int *board);
+int get_direction();
 
 
 // Priorities / Heuristics:
