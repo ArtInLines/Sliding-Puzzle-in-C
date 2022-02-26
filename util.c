@@ -22,3 +22,10 @@ int* index_to_pos(int index, int column_size) {
 int pos_to_index(int *pos, int column_size) {
     return pos[0]*column_size + pos[1];
 }
+
+// Clear Console
+// system() is very resource-intensive & shouldn't be used,
+// but for now it's fine
+void clear_screen() {
+    if (system("CLS")) system("clear");
+}

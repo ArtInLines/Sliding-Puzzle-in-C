@@ -4,7 +4,7 @@
 
 int is_solved(int len, int *board) {
     int i = 0;
-    while (i < len-1) if (++i != board[i]) return 0;
+    while (i < len-1) if (board[i] != ++i) return 0;
     // Last field doesn't have to be checked,
     // as long as all others are placed correctly
     return 1;

@@ -28,6 +28,8 @@ int get_direction();
 
 void move(int *pos);
 
+void A_star_next_turn();
+
 
 // Utilities:
 
@@ -38,6 +40,8 @@ int swap_ints(int *x, int *y);
 int* index_to_pos(int index, int column_size);
 
 int pos_to_index(int *pos, int column_size);
+
+void clear_screen();
 
 // Board:
 
