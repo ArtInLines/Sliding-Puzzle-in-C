@@ -59,15 +59,20 @@ int main() {
         printf("Processing...\n");
         int *path = A_star();
         int i = 0;
-        // while (path[i] != -1) {
-        //     // if (i) sleep(100);
-        //     if (i) {
-        //         printf("Press any key to continue");
-        //         getchar();
-        //         putchar((int) '\n');
-        //     }
-        //     play_turn(path[i]);
-        // }
+        while (path[i] != -1) {
+            // if (i) sleep(100);
+            if (i) {
+                printf("Press any key to continue");
+                getchar();
+                // putchar((int) '\n');
+            }
+            play_turn(path[i]);
+            turn_counter++;
+            // Show board
+            clear_screen();
+            show_board(column_size, row_size, board);
+            i++;
+        }
     }
     
     printf("\nThe puzzle was solved in %i moves! \\o/", turn_counter);

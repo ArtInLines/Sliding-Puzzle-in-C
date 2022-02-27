@@ -44,13 +44,13 @@ int rand_id() {
 // Linked List:
 
 
-listItem* create_item(int weight, void *data, int size) {
+listItem* create_item(int id, int weight, void *data, int size) {
     listItem *ptr = malloc(sizeof(listItem));
     if (ptr==NULL) {
         printf("Item couldn't be created!");
         return ptr;
     }
-    ptr->id = rand_id();
+    ptr->id = id==0 ? rand_id() : id;
     ptr->weight = weight;
     ptr->data = data;
     ptr->size = size;
@@ -113,6 +113,26 @@ listItem* find_by_id(int id, listItem *root) {
     return NULL;
 }
 
+listItem* find_by_data(listItem *root, int (*f) (int*)) {
+    listItem *tmp = root;
+    if (f(tmp->data)) return tmp;
+    while (tmp->next != NULL) {
+        tmp = tmp->next;
+        if (f(tmp->data)) return tmp;
+    }
+    return NULL;
+}
+
+listItem* find(listItem *root, int (*f) (listItem*)) {
+    listItem *tmp = root;
+    if (f(tmp)) return tmp;
+    while (tmp->next != NULL) {
+        tmp = tmp->next;
+        if (f(tmp)) return tmp;
+    }
+    return NULL;
+}
+
 listItem* shift(listItem *root) {
     root->next->prev = NULL;
     listItem *new_root = root->next;
@@ -126,17 +146,34 @@ listItem* sort(listItem *root) {
 
 listItem* insert_sorted(listItem *root, listItem *new_el, int skip_root) {
     listItem *tmp = root;
-    if (skip_root) tmp = tmp->next;
+    if (skip_root) {
+        if (tmp->next == NULL) return insert(root, new_el);
+        else tmp = tmp->next;
+    }
     while (tmp->next != NULL) {
         if (new_el->weight <= tmp->weight) return insert(tmp->prev, new_el);
         else tmp = tmp->next;
-    }
+    }    
     if (new_el->weight <= tmp->weight) return insert(tmp->prev, new_el);
     else return insert(tmp, new_el);
 }
 
+int get_list_len(listItem *root) {
+    int len = 1;
+    listItem *tmp = root;
+    while (tmp->next) {
+        tmp = tmp->next;
+        len++;
+    }
+    return len;
+}
+
 void print_list_item(listItem *item) {
-    printf("(Weight: %i, DataSize: %i)\n", item->weight, item->size);
+    printf("(Weight: %i, ID: %i)\n", item->weight, item->id);
+}
+
+void print_list_item_data(listItem *item) {
+    for (int i = 0; i < 14; i++) printf("%i.: %i\n", i, (item->data)[i]);
 }
 
 void print_list(listItem *root) {

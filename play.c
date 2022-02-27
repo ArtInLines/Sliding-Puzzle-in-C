@@ -30,7 +30,7 @@ int play_turn_with_board(int direction, int *board, int *empty_field) {
     int *affected_field = get_new_pos(empty_field, direction);
     if (affected_field[0] == -1) return ILLEGAL_DIRECTION;
     
-    printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
+    // printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
     
     // Check if turn is possible
     if (affected_field[0] < 0 || !affected_field[1] < 0 || affected_field[0] >= g_row_size || affected_field[1] >= g_column_size) return MOVE_OUTSIDE_BORDERS;
@@ -114,81 +114,111 @@ int get_data_size(int len){
 int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_field, int *board) {
     int *data = malloc(get_data_size(len));
     int i = 0;
-    data[i++] = prev_node;
-    data[i++] = moves_amount;
-    data[i++] = dir;
-    data[i++] = empty_field[0];
-    data[i++] = empty_field[1];
-    for (int diff = i; i < len; i++) data[i] = g_board[i-diff];
+    data[i] = prev_node; i++;
+    data[i] = moves_amount; i++;
+    data[i] = dir; i++;
+    data[i] = empty_field[0]; i++;
+    data[i] = empty_field[1]; i++;
+    for (int diff = i, i = 0; i < len; i++) data[i+diff] = board[i];
+    
+    // Debugging
+    // printf("Creating Data:\n");
+    // for (i = 0; i < len+5; i++) printf("%i. -> %i\n", i, data[i]);
+    
     return data;
 }
 
+listItem* find_by_board(listItem *root, int *board, int len) {
+    listItem *tmp = root;
+    if (compare_board(board, &(tmp->data)[5], len)) return tmp;
+    while (tmp->next!=NULL) {
+        tmp = tmp->next;
+        if (compare_board(board, &(tmp->data)[5], len)) return tmp;
+    }
+    return NULL;
+}
+
 int* A_star() {
-    int i, prev_node, dir, moves_amount, turn_return, len = g_column_size * g_row_size;
-    int *data, *current_board, *next_board, current_empty_field[2], directions[4] = {UP, RIGHT, DOWN, LEFT};
+    int i, prev_node, dir, moves_amount, turn_return, board_id, len = g_column_size * g_row_size;
+    int *data, *current_board, *next_board, current_empty_field[2], *next_empty_field, directions[4] = {UP, RIGHT, DOWN, LEFT};
     listItem *current_node;
     
     data = create_data(len, 0, 0, -1, g_empty_field_pos, g_board);
     int data_size = get_data_size(len);
     
     listItem *node;
-    listItem *root = create_item(get_priority(0, g_column_size, g_row_size, g_board), data, data_size);
-    listItem *used_stack = create_item(0, data, data_size);
+    listItem *root = create_item(0, get_priority(0, g_column_size, g_row_size, g_board), data, data_size);
+    listItem *used_stack = create_item(0, 0, data, data_size);
     
-    printf("A* before while loop\n");
+    // printf("A* before while loop\n");
     
     while (1) {
-        printf("Just entered while loop\n");
-        
         i = 0;
-        printf("i = %i\n", i);
         data = root->data;
-        printf("data = root->data\n");
-        printf("data[0]: %i\n", data[0]);
         prev_node = data[i]; i++;
-        printf("prev_node: %i\n", prev_node);
         moves_amount = data[i]; i++;
-        printf("moves_amount: %i\n", moves_amount);
         dir = data[i]; i++;
-        printf("dir: %i\n", dir);
         current_empty_field[0] = data[i]; i++;
-        printf("empty_field[0]: %i\n", current_empty_field[0]);
         current_empty_field[1] = data[i]; i++;
-        printf("empty_field[1]: %i\n", current_empty_field[1]);
-        current_board = &data[i]; i++;
-        
-        printf("A* before for loop\n");
+        current_board = &(data[i]);
         
         // Add new nodes for each direction (skipping illegal directions)
         for (i = 0; i < 4; i++) {
             next_board = copy_board(len, current_board);
-            turn_return = play_turn_with_board(directions[i], next_board, current_empty_field);
+            next_empty_field = copy_board(2, current_empty_field);
+            turn_return = play_turn_with_board(directions[i], next_board, next_empty_field);
+            // printf("turn_return = %i\n", turn_return);
             if (turn_return != SUCCESS) continue;
-            data = create_data(len, root->id, moves_amount+1, directions[i], get_new_pos(current_empty_field, directions[i]), next_board);
-            node = create_item(get_priority(moves_amount+1, g_column_size, g_row_size, next_board), data, data_size);
+            // printf("\nMove %i: \n", directions[i]);
+            // show_board(g_column_size, g_row_size, next_board);
+            
+            // printf("\nDirection: %i\n", directions[i]);
+            // printf("next_board[4]: %i\n", next_board[4]);
+            
+            data = create_data(len, root->id, moves_amount+1, directions[i], next_empty_field, next_board);
+            // board_id = create_board_id(next_board, len);
+            node = create_item(0, get_priority(moves_amount+1, g_column_size, g_row_size, next_board), data, data_size);
+            // print_list_item(node);
+            // print_list_item_data(node);
+            
+            if (find_by_board(used_stack, next_board, len) != NULL) continue;
+            
+            // printf("New Node: "); print_list_item(node);
+            // printf("Root: "); print_list_item(root);
+            
             insert_sorted(root, node, 1);
+            
+            // printf("Complete List:\n");
+            // print_list(root);
         }
+        // print_list(root);
+        // print_list(used_stack);
         
         insert(used_stack, copy_item(root, 1));
         root = shift(root);
         
-        printf("A* after for loop\n");
+        // printf("\n\n\n");
+        // show_board(g_column_size, g_row_size, &(root->data)[5]);
+        // printf("Current root: "); print_list_item(root);
+        // printf("Stack:\n"); print_list(root);
+        // printf("\nUsed Stack:\n"); print_list(used_stack);
+        
+        printf("Looked at %i possible moves", get_list_len(used_stack));
         
         if (is_solved(len, &(root->data)[5])) break;
     }
     
-    printf("A* before path creation\n");
+    // printf("A* before path creation: moves_amount=%i\n", moves_amount+2);
     
-    i = 0;
     int *path = malloc((moves_amount+2) * sizeof(int));
+    path[moves_amount+1] = -1;
     do {
-        path[i] = (root->data)[2];
+        moves_amount = (root->data)[1];
+        path[moves_amount-1] = (root->data)[2];
         prev_node = (root->data)[0];
-        i++;
-    } while(prev_node);
-    path[i] = -1;
-    
-    for (int j = 0; j < i; j++) printf("j: %i - path[j]: %i\n", j, path[j]);
+        root = find_by_id(prev_node, used_stack);
+        // printf("i: %i -> path[i]: %i | moves_amount: %i\n", moves_amount-1, path[moves_amount-1], moves_amount);
+    } while((root->data)[1]);
     
     return path;
 }

@@ -67,6 +67,8 @@ void print_list(listItem *root);
 
 void print_list_item(listItem *item);
 
+void print_list_item_data(listItem *item);
+
 listItem* insert_sorted(listItem *root, listItem *new_el, int skip_root);
 
 listItem* sort(listItem *root);
@@ -77,9 +79,15 @@ listItem* shift(listItem *root);
 
 listItem* insert(listItem *last_item, listItem *new_el);
 
-listItem* create_item(int weight, void *data, int size);
+listItem* create_item(int id, int weight, void *data, int size);
 
 listItem* copy_item(listItem *item, int keep_id);
+
+listItem* find_by_id(int id, listItem *root);
+
+listItem* find_by_data(listItem *root, int (*f) (int*));
+
+int get_list_len(listItem *root);
 
 
 // Board:
@@ -97,6 +105,10 @@ int count_transpositions(int len, int *board);
 int get_direction();
 
 int* get_new_pos(int *old_pos, int dir);
+
+int create_board_id(int *board, int len);
+
+int compare_board(int *board1, int *board2, int len);
 
 
 // Priorities / Heuristics:

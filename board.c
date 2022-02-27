@@ -126,3 +126,23 @@ void show_board(int column_size, int row_size, int *board) {
         print_row(&column_size, &cell_width, &border_char);
     }
 }
+
+int compare_board(int *board1, int *board2, int len) {
+    for (int i = 0; i < len; i++) if(board1[i] != board2[i]) return 0;
+    return 1;
+}
+
+// int my_pow(int x, int n) {
+//     for (int i = 1; i < n; i++) x *= x;
+//     return x;
+// }
+
+// int create_board_id(int *board, int len) {
+//     int id = board[0];
+//     for (int i = 1; i < len; i++) {
+//         // id ^= (board[i] << (i % (sizeof(int) * 8)));
+//         id += my_pow(10, i) * board[i];
+//         printf("i: %i - ID: %i\n", i, id);
+//     }
+//     return id;
+// }
