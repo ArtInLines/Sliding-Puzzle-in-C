@@ -70,35 +70,20 @@ int get_direction() {
     GET_CHAR_LOOP:
         printf("\n");
         printf("To let the computer help you with the next move, press e\n");
-        printf("To let the computer finish this puzzle, press 'q\n");
+        printf("To let the computer finish this puzzle, press q\n");
         printf("Make a move using w-a-s-d:  ");
         key = getchar();
         while ('\n'!=getchar());
         // putchar(key);
         // printf("\nGotten key %c with code %i\n", key, (int) key);
-        switch (key) {
-            case 'w':
-                direction = UP;
-                break;
-            case 'a':
-                direction = LEFT;
-                break;
-            case 's':
-                direction = DOWN;
-                break;
-            case 'd':
-                direction = RIGHT;
-                break;
-            case 'e':
-                direction = GETHELP;
-                break;
-            case 'q':
-                direction = FINISH;
-                break;
-            default:
-                direction = ERROR;
-                break;
-        }
+        if (key == 'w' || key == 'W') direction = UP;
+        else if (key == 'a' || key == 'A') direction = LEFT;
+        else if (key == 's' || key == 'S') direction = DOWN;
+        else if (key == 'd' || key == 'D') direction = RIGHT;
+        else if (key == 'e' || key == 'E') direction = GETHELP;
+        else if (key == 'q' || key == 'Q') direction = FINISH;
+        else direction = ERROR;
+        
         if (g_inverted) direction = get_opposite_direction(direction);
     if (direction == ERROR) {
         printf("You donkey, how hard is it to follow instructions! Try again!\n");
@@ -135,6 +120,7 @@ int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_f
     data[i++] = empty_field[0];
     data[i++] = empty_field[1];
     for (int diff = i; i < len; i++) data[i] = g_board[i-diff];
+    return data;
 }
 
 int* A_star() {
@@ -149,15 +135,29 @@ int* A_star() {
     listItem *root = create_item(get_priority(0, g_column_size, g_row_size, g_board), data, data_size);
     listItem *used_stack = create_item(0, data, data_size);
     
+    printf("A* before while loop\n");
+    
     while (1) {
+        printf("Just entered while loop\n");
+        
         i = 0;
+        printf("i = %i\n", i);
         data = root->data;
-        prev_node = data[i++];
-        moves_amount = data[i++];
-        dir = data[i++];
-        current_empty_field[0] = data[i++];
-        current_empty_field[1] = data[i++];
-        current_board = &data[i++];
+        printf("data = root->data\n");
+        printf("data[0]: %i\n", data[0]);
+        prev_node = data[i]; i++;
+        printf("prev_node: %i\n", prev_node);
+        moves_amount = data[i]; i++;
+        printf("moves_amount: %i\n", moves_amount);
+        dir = data[i]; i++;
+        printf("dir: %i\n", dir);
+        current_empty_field[0] = data[i]; i++;
+        printf("empty_field[0]: %i\n", current_empty_field[0]);
+        current_empty_field[1] = data[i]; i++;
+        printf("empty_field[1]: %i\n", current_empty_field[1]);
+        current_board = &data[i]; i++;
+        
+        printf("A* before for loop\n");
         
         // Add new nodes for each direction (skipping illegal directions)
         for (i = 0; i < 4; i++) {
@@ -172,16 +172,23 @@ int* A_star() {
         insert(used_stack, copy_item(root, 1));
         root = shift(root);
         
-        if (root->weight == 0) break;
+        printf("A* after for loop\n");
+        
+        if (is_solved(len, &(root->data)[5])) break;
     }
+    
+    printf("A* before path creation\n");
     
     i = 0;
     int *path = malloc((moves_amount+2) * sizeof(int));
     do {
-        path[i++] = (root->data)[2];
+        path[i] = (root->data)[2];
         prev_node = (root->data)[0];
+        i++;
     } while(prev_node);
-    path[i] = 0;
+    path[i] = -1;
+    
+    for (int j = 0; j < i; j++) printf("j: %i - path[j]: %i\n", j, path[j]);
     
     return path;
 }

@@ -56,18 +56,18 @@ int main() {
     
     if (!is_player_turn) {
     FINISH_PUZZLE:
-        printf("Processing...");
+        printf("Processing...\n");
         int *path = A_star();
         int i = 0;
-        while (path[i] != -1) {
-            // if (i) sleep(100);
-            if (i) {
-                printf("Press any key to continue");
-                getchar();
-                putchar((int) '\n');
-            }
-            play_turn(path[i]);
-        }
+        // while (path[i] != -1) {
+        //     // if (i) sleep(100);
+        //     if (i) {
+        //         printf("Press any key to continue");
+        //         getchar();
+        //         putchar((int) '\n');
+        //     }
+        //     play_turn(path[i]);
+        // }
     }
     
     printf("\nThe puzzle was solved in %i moves! \\o/", turn_counter);

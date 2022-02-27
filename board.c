@@ -48,8 +48,7 @@ int count_transpositions(int len, int *board) {
 int* create_initial_board(int column_size, int row_size, int variance) {
     int len = column_size * row_size;
     int *board = malloc(len * sizeof(int));
-    int i = 0;
-    while (i < len) board[i] = ++i;
+    for (int i = 0; i < len; i++) board[i] = i+1;
     board[len-1] = 0;
     swap_ints(&board[len-1], &board[len-1-column_size]);
     swap_ints(&board[len-1-column_size], &board[len-2-column_size]);
