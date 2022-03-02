@@ -10,31 +10,36 @@ int is_solved(int len, int *board) {
     return 1;
 }
 
-int is_solvable(int len, int *board) {
-    if (count_transpositions(len, board) % 2) return 0; // For odd amounts of transpositions, the puzzle is not solvable
+int is_solvable(int column_size, int row_size, int *board) {
+    if (solvable_helper(column_size, row_size, board) % 2) return 0; // For odd amounts of transpositions, the puzzle is not solvable
     else return 1; // For even amounts of transpositions, the puzzle is solvable
     
     // See ./literature for mathematical proves of this fact!
 }
 
-int count_transpositions(int len, int *board) {
-    int i, j, index, cell, transpositions_amount = 0;
-    // Create copy of board without empty field
-    int *board_copy = malloc((len-1) * sizeof(int));
-    for (i = 0, j = 0; i < len; i++) {
-        if (!board[i]) continue;
-        board_copy[j] = board[i];
-        j++;
+int solvable_helper(int column_size, int row_size, int *board) {
+    int i, cell, transpositions_amount = 0, len = column_size * row_size;
+    // Create copy of board where empty field is equal to the highest numbr (since it should be at the end of the board)
+    int *empty_field = malloc(2 * sizeof(int));
+    int *board_copy = malloc(len * sizeof(int));
+    for (i = 0; i < len; i++) {
+        board_copy[i] = board[i];
+        if (!board_copy[i]) empty_field = index_to_pos(i, column_size);
     }
+    // Move the empty field to the last position with legal moves, so it can be ignored
+    while (empty_field[0] < row_size-1) play_turn_with_everything(DOWN, column_size, row_size, -2, 0, board_copy, empty_field);
+    while (empty_field[1] < column_size-1) play_turn_with_everything(RIGHT, column_size, row_size, -2, 0, board_copy, empty_field);
     
-    // Loop through copied board
+    // Loop through copied board (while ignoring empty field at last position)
     // When reaching an element out of order:
         // Swap the number with the number at the index, that this number should be at
         // i.e. if number 5 is at the first index, swap 5 with the number at the 5th index
         // Increase the amount of transpositions   
     for (i = 0; i < len-1; i++) {
         while (board_copy[i]-1 != i) {
-            printf("(%i %i)  -  (%i %i)  -  %i\n", i, board_copy[i]-1, board_copy[i], board_copy[board_copy[i]-1], transpositions_amount+1);
+            // Debugging
+            // Print (index1 index2) - (value1 value2) - amount of currnet transpositions
+            // printf("(%i %i)  -  (%i %i)  -  %i\n", i, board_copy[i]-1, board_copy[i], board_copy[board_copy[i]-1], transpositions_amount+1);
             
             swap_ints(&board_copy[i], &board_copy[board_copy[i]-1]);
             transpositions_amount++;
@@ -83,7 +88,7 @@ int* get_new_pos(int *old_pos, int dir) {
 
 // Print Board:
 
-void print_row(int *column_size, int *cell_width, char *border_char) {
+void print_row(int *column_size, float *cell_width, char *border_char) {
     for (int i = 0, len = (*column_size) * (*cell_width); i < len; i++) {
         printf("%c ", *border_char);
     }
@@ -101,22 +106,25 @@ void show_board(int column_size, int row_size, int *board) {
     // * * * * * * * * * *
     
     char border_char = '*', empty_field_char = '-';
-    int len = column_size * row_size, cell_width = 3, i, j, cell;
-    char before_str[3] = "  ", after_str[3] = "  ";
+    int len = column_size * row_size, i, j, cell;
+    float cell_width = 3;
+    char before_str[4] = "  ", after_str[4] = "  ";
     
     if ((len-1)>10) {
         before_str[2] = ' ';
-        cell_width++;
+        cell_width += 0.5;
     }
     if ((len-1)>100) { 
         after_str[2] = ' ';
-        cell_width++;
+        cell_width += 0.5;
     }
     
     print_row(&column_size, &cell_width, &border_char);
     for (i = 0; i < row_size; i++) {
         for (j = 0; j < column_size; j++) {
             cell = board[i*column_size + j];
+            if (cell >= 10) before_str[2] = 0;
+            if (cell >= 100) after_str[2] = 0;
             printf("%c%s", border_char, before_str);
             if (cell) printf("%i", cell);
             else printf("%c", empty_field_char);

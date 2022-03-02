@@ -17,33 +17,37 @@ int init_game(int column_size, int row_size, int *board, int inverted) {
     g_empty_field_pos = index_to_pos(i, g_column_size);
 }
 
-void move(int *pos1, int *pos2, int *board) {
-    int posIndex = pos_to_index(pos1, g_column_size);
-    int emptyIndex = pos_to_index(pos2, g_column_size);
+void move(int *pos1, int *pos2, int column_size, int *board) {
+    int posIndex = pos_to_index(pos1, column_size);
+    int emptyIndex = pos_to_index(pos2, column_size);
     
     swap_ints(&board[posIndex], &board[emptyIndex]);
     pos2[0] = pos1[0];
     pos2[1] = pos1[1];
 }
 
-int play_turn_with_board(int direction, int *board, int *empty_field) {
+int play_turn_with_everything(int direction, int column_size, int row_size, int last_direction, int moved_back_counter, int *board, int *empty_field) {
     int *affected_field = get_new_pos(empty_field, direction);
     if (affected_field[0] == -1) return ILLEGAL_DIRECTION;
     
     // printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
     
     // Check if turn is possible
-    if (affected_field[0] < 0 || !affected_field[1] < 0 || affected_field[0] >= g_row_size || affected_field[1] >= g_column_size) return MOVE_OUTSIDE_BORDERS;
+    if (affected_field[0] < 0 || affected_field[1] < 0 || affected_field[0] >= row_size || affected_field[1] >= column_size) return MOVE_OUTSIDE_BORDERS;
     
     // Check if player moved back too often
     // to prevent loops of moving back and forth
-    if (g_last_direction == get_opposite_direction(direction)) g_moved_back++;
-    else g_moved_back = 0;
-    if (g_moved_back >= 2) return REPEATED_MOVE_BACK;
-    g_last_direction = direction;
+    if (last_direction == get_opposite_direction(direction)) moved_back_counter++;
+    else moved_back_counter = 0;
+    if (moved_back_counter >= 2) return REPEATED_MOVE_BACK;
+    last_direction = direction;
     
-    move(affected_field, empty_field, board);
+    move(affected_field, empty_field, column_size, board);
     return SUCCESS;
+}
+
+int play_turn_with_board(int direction, int *board, int *empty_field) {
+    return play_turn_with_everything(direction, g_column_size, g_row_size, g_last_direction, g_moved_back, board, empty_field);
 }
 
 int play_turn(int direction) {

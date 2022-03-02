@@ -12,6 +12,10 @@
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
 int main() {
+    test_solvable();
+    return 0;
+    
+    
     int column_size = 3, row_size = 3, len = column_size*row_size, is_player_turn = 1, turn_counter = 0;
     // Create puzzle
         // Potentially add interface for creating a puzzle

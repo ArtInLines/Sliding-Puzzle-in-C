@@ -36,11 +36,13 @@ int play_turn(int direction);
 
 int play_turn_with_board(int direction, int *board, int *empty_field);
 
+int play_turn_with_everything(int direction, int column_size, int row_size, int last_direction, int moved_back_counter, int *board, int *empty_field);
+
 int get_opposite_direction(int direction);
 
 int get_direction();
 
-void move(int *pos1, int *pos2, int *board);
+void move(int *pos1, int *pos2, int column_size, int *board);
 
 int* A_star();
 
@@ -94,13 +96,15 @@ int get_list_len(listItem *root);
 
 int is_solved(int len, int *board);
 
-int is_solvable(int len, int *board);
+int is_solvable(int column_size, int row_size, int *board);
+
+int solvable_helper(int column_size, int row_size, int *board);
 
 int* create_initial_board(int column_size, int row_size, int variance);
 
 void show_board(int column_size, int row_size, int *board);
 
-int count_transpositions(int len, int *board);
+void print_row(int *column_size, float *cell_width, char *border_char);
 
 int get_direction();
 
