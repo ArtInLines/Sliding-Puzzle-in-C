@@ -31,7 +31,7 @@ void clear_screen() {
     if (system("CLS")) system("clear");
 }
 
-int rand_id() {
+int rand_int() {
     // initiate x to be an arbitrary, high prime number
     static int x = 77002813;
     x ^= (x << 13);
@@ -39,6 +39,13 @@ int rand_id() {
     x ^= (x << 5);
     return x;
 }
+
+int next_id() {
+    static int x = 1;
+    x++;
+    return x;
+}
+
 
 
 // Linked List:
@@ -50,7 +57,7 @@ listItem* create_item(int id, int weight, void *data, int size) {
         printf("Item couldn't be created!");
         return ptr;
     }
-    ptr->id = id==0 ? rand_id() : id;
+    ptr->id = id==0 ? next_id() : id;
     ptr->weight = weight;
     ptr->data = data;
     ptr->size = size;
@@ -64,7 +71,7 @@ listItem* copy_item(listItem *item, int keep_id) {
         printf("Item couldn't be copied!");
         return ptr;
     }
-    ptr->id = keep_id ? item->id : rand_id();
+    ptr->id = keep_id ? item->id : next_id();
     ptr->weight = item->weight;
     ptr->size = item->size;
     ptr->data = malloc(item->size);

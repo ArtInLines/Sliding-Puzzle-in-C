@@ -16,10 +16,17 @@ int main() {
     // return 0;
     
     
-    int column_size = 3, row_size = 3, len = column_size*row_size, is_player_turn = 1, turn_counter = 0;
+    int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0;
     // Create puzzle
         // Potentially add interface for creating a puzzle
-    int *board = create_initial_board(column_size, row_size, 0);
+    while (column_size <= 1) { printf("Enter the puzzle's column size (>1): "); scanf("%d", &column_size); }
+    while (row_size <= 1) { printf("Enter the puzzle's row size (>1): "); scanf("%d", &row_size); }
+    while (variance <= 0) { printf("Enter the initial game board's variance (>0): "); scanf("%d", &variance); } // Add better description
+    printf("Do you wish to try the puzzle yourself (1) or let the computer solve it for you (0)? "); scanf("%d", &is_player_turn);
+    
+    // TODO: Allow the player to input their own initial puzzle state
+    int len = column_size*row_size;
+    int *board = create_initial_board(column_size, row_size, variance);
     // Start Game
     init_game(column_size, row_size, board, 0);
     // Show board
@@ -60,22 +67,21 @@ int main() {
     
     if (!is_player_turn) {
     FINISH_PUZZLE:
-        printf("Processing...\n");
+        printf("Processing... ");
         int *path = A_star();
+        printf("done!\n");
         int i = 0;
         while (path[i] != -1) {
-            // if (i) sleep(100);
             if (i) {
-                printf("Press any key to continue");
+                printf("Press any key to continue\n");
                 getchar();
-                // putchar((int) '\n');
             }
             play_turn(path[i]);
             turn_counter++;
+            i++;
             // Show board
             clear_screen();
             show_board(column_size, row_size, board);
-            i++;
         }
     }
     

@@ -195,7 +195,9 @@ int* A_star() {
             // printf("Complete List:\n");
             // print_list(root);
         }
+        // printf("Stack:\n");
         // print_list(root);
+        // printf("Used Stack:\n");
         // print_list(used_stack);
         
         insert(used_stack, copy_item(root, 1));
@@ -207,13 +209,15 @@ int* A_star() {
         // printf("Stack:\n"); print_list(root);
         // printf("\nUsed Stack:\n"); print_list(used_stack);
         
-        printf("Looked at %i possible moves\n", get_list_len(used_stack));
+        // printf("Looked at %i possible moves\n", get_list_len(used_stack));
         
         if (is_solved(len, &(root->data)[5])) break;
     }
     
-    // printf("A* before path creation: moves_amount=%i\n", moves_amount+2);
+    // show_board(g_column_size, g_row_size, &(root->data)[5]);
     
+    // printf("A* before path creation: moves_amount=%i\n", moves_amount+2);
+    RETURN_PATH:
     int *path = malloc((moves_amount+2) * sizeof(int));
     path[moves_amount+1] = -1;
     do {

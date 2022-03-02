@@ -63,7 +63,9 @@ int pos_to_index(int *pos, int column_size);
 
 void clear_screen();
 
-int rand_id();
+int next_id();
+
+int rand_int();
 
 void print_list(listItem *root);
 

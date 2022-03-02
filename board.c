@@ -1,6 +1,7 @@
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "util.h"
+#include <time.h>
 
 int is_solved(int len, int *board) {
     int i = 0;
@@ -51,12 +52,32 @@ int solvable_helper(int column_size, int row_size, int *board) {
 }
 
 int* create_initial_board(int column_size, int row_size, int variance) {
-    int len = column_size * row_size;
+    int len = column_size * row_size, i, r, empty_field = len - 1;
     int *board = malloc(len * sizeof(int));
-    for (int i = 0; i < len; i++) board[i] = i+1;
-    board[len-1] = 0;
-    swap_ints(&board[len-1], &board[len-1-column_size]);
-    swap_ints(&board[len-1-column_size], &board[len-2-column_size]);
+    
+    // maybe do some more interesting calculation here someday:
+    int swap_amount = variance;
+    
+    // Fill & shuffle board
+    srand(time(NULL)); // init rand()
+    for (i = 0; i < len; i++) board[i] = i+1;
+    board[empty_field] = 0;
+    for (i = 0; i < swap_amount || !is_solvable(column_size, row_size, board) || is_solved(len, board); i++) {
+        do { r = rand() % len; } while (r == empty_field);
+        swap_ints(&board[empty_field], &board[r]);
+        empty_field = r;
+    }
+   
+    // First test
+    // for (int i = 0; i < len; i++) board[i] = i+1;
+    // board[len-1] = 0;
+    // swap_ints(&board[len-1], &board[len-1-column_size]);
+    // swap_ints(&board[len-1-column_size], &board[len-2-column_size]);
+
+    // Alternative test:
+    // int arr[10] = {4, 3, 5, 7, 1, 6, 8, 2, 0};
+    // for (int i = 0; i < len; i++) board[i] = arr[i];
+    
     return board;
 }
 
