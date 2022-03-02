@@ -128,24 +128,19 @@ void show_board(int column_size, int row_size, int *board) {
     
     char border_char = '*', empty_field_char = '-';
     int len = column_size * row_size, i, j, cell;
-    float cell_width = 3;
+    float cell_width = 4;
     char before_str[4] = "  ", after_str[4] = "  ";
-    
-    if ((len-1)>10) {
-        before_str[2] = ' ';
-        cell_width += 0.5;
-    }
-    if ((len-1)>100) { 
-        after_str[2] = ' ';
-        cell_width += 0.5;
-    }
     
     print_row(&column_size, &cell_width, &border_char);
     for (i = 0; i < row_size; i++) {
         for (j = 0; j < column_size; j++) {
             cell = board[i*column_size + j];
-            if (cell >= 10) before_str[2] = 0;
+            
             if (cell >= 100) after_str[2] = 0;
+            else after_str[2] = ' ';
+            if (cell >= 10) before_str[2] = 0;
+            else before_str[2] = ' ';
+            
             printf("%c%s", border_char, before_str);
             if (cell) printf("%i", cell);
             else printf("%c", empty_field_char);

@@ -217,7 +217,6 @@ int* A_star() {
     // show_board(g_column_size, g_row_size, &(root->data)[5]);
     
     // printf("A* before path creation: moves_amount=%i\n", moves_amount+2);
-    RETURN_PATH:
     int *path = malloc((moves_amount+2) * sizeof(int));
     path[moves_amount+1] = -1;
     do {
@@ -239,6 +238,8 @@ int* A_star_mem_efficient() {
 }
 
 int get_next_move() {
+    printf("Processing... ");
     int *path = A_star();
+    printf("done!\n");
     return path[0];
 }

@@ -12,11 +12,8 @@
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
 int main() {
-    // test_solvable();
-    // return 0;
-    
-    
     int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0;
+    clear_screen();
     // Create puzzle
         // Potentially add interface for creating a puzzle
     while (column_size <= 1) { printf("Enter the puzzle's column size (>1): "); scanf("%d", &column_size); }
@@ -31,6 +28,7 @@ int main() {
     init_game(column_size, row_size, board, 0);
     // Show board
     clear_screen();
+    printf("Here's the puzzle:\n\n");
     show_board(column_size, row_size, board);
     
     
@@ -73,7 +71,7 @@ int main() {
         int i = 0;
         while (path[i] != -1) {
             if (i) {
-                printf("Press any key to continue\n");
+                printf("Press enter to continue\n");
                 getchar();
             }
             play_turn(path[i]);
