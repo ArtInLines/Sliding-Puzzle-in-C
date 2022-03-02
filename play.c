@@ -207,7 +207,7 @@ int* A_star() {
         // printf("Stack:\n"); print_list(root);
         // printf("\nUsed Stack:\n"); print_list(used_stack);
         
-        printf("Looked at %i possible moves", get_list_len(used_stack));
+        printf("Looked at %i possible moves\n", get_list_len(used_stack));
         
         if (is_solved(len, &(root->data)[5])) break;
     }
