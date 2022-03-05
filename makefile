@@ -1,1 +1,1 @@
-gcc main.c board.c priority.c test.c util.c play.c -o main.exe
+gcc main.c board.c priority.c test.c util.c play.c pathfinding.c -o main.exe

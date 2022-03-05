@@ -8,19 +8,20 @@ void test_priority() {
     int tests[] = {
     // expected_hamming, expected_manhattan, column_size, row_size,
         // *board
-        5, 10, 3, 3,
+        1, 5, 10, 3, 3,
             8, 1, 3,
             4, 0, 2,
             7, 6, 5,
-        4, 10, 4, 3,
+        1, 4, 10, 4, 3,
             2, 8, 3, 0,
             5, 6, 7, 4,
             9, 10, 11, 1
     };
     
-    int i, j, expected_hamming, expected_manhattan, hamming_res, manhattan_res, column_size, row_size, index = 0;
+    int i, j, bias, expected_hamming, expected_manhattan, hamming_res, manhattan_res, column_size, row_size, index = 0;
     
     for (i = 0; i < test_amounts; i++) {
+        bias = tests[index++];
         expected_hamming = tests[index++];
         expected_manhattan = tests[index++];
         column_size = tests[index++];
@@ -28,8 +29,8 @@ void test_priority() {
         
         // printf("\n%i - %i - %i - %i\n", expected_hamming, expected_manhattan, column_size, row_size);
         
-        hamming_res = hamming(0, column_size, row_size, &tests[index]);
-        manhattan_res = manhattan(0, column_size, row_size, &tests[index]);
+        hamming_res = hamming(0, bias, column_size, row_size, &tests[index]);
+        manhattan_res = manhattan(0, bias, column_size, row_size, &tests[index]);
         
         if (hamming_res == expected_hamming) printf("Hamming test #%i successful\n", i+1);
         else {

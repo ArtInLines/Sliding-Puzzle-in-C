@@ -28,8 +28,8 @@ int solvable_helper(int column_size, int row_size, int *board) {
         if (!board_copy[i]) empty_field = index_to_pos(i, column_size);
     }
     // Move the empty field to the last position with legal moves, so it can be ignored
-    while (empty_field[0] < row_size-1) play_turn_with_everything(DOWN, column_size, row_size, -2, 0, board_copy, empty_field);
-    while (empty_field[1] < column_size-1) play_turn_with_everything(RIGHT, column_size, row_size, -2, 0, board_copy, empty_field);
+    while (empty_field[0] < row_size-1) play_turn(DOWN, column_size, row_size, board_copy, empty_field, 0);
+    while (empty_field[1] < column_size-1) play_turn(RIGHT, column_size, row_size, board_copy, empty_field, 0);
     
     // Loop through copied board (while ignoring empty field at last position)
     // When reaching an element out of order:
@@ -49,6 +49,12 @@ int solvable_helper(int column_size, int row_size, int *board) {
 
     free(board_copy);
     return transpositions_amount;
+}
+
+int* get_empty_field(int column_size, int *board) {
+    int i = 0;
+    while (board[i]) i++;
+    return index_to_pos(i, column_size);
 }
 
 int* create_initial_board(int column_size, int row_size, int variance) {
@@ -79,6 +85,12 @@ int* create_initial_board(int column_size, int row_size, int variance) {
     // for (int i = 0; i < len; i++) board[i] = arr[i];
     
     return board;
+}
+
+int* copy_board(int len, int *board) {
+    int *new_board = malloc(len * sizeof(int));
+    for (int i = 0; i < len; i++) new_board[i] = board[i];
+    return new_board;
 }
 
 int* get_new_pos(int *old_pos, int dir) {
