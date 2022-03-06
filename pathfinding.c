@@ -104,7 +104,7 @@ int* A_star(int column_size, int row_size, int bias, int *empty_field, int *boar
         insert(used_stack, copy_item(root, 1));
         root = shift(root);
         
-        printf("\rStack Height: %i   -   Used Stack Height: %i   -   Best Priority: %i   -   Root ID: %i   -   Turn Counter: %i", get_list_len(root), get_list_len(used_stack), root->weight - (root->data)[1], root->id, (root->data)[1]);
+        printf("\rStack Height: %i   -   Used Stack Height: %i   -   Best Priority: %i   -   Root ID: %i   -   Turn Counter: %i  ", get_list_len(root), get_list_len(used_stack), root->weight, root->id, (root->data)[1]);
         
         // printf("\n\n\n");
         // show_board(column_size, row_size, &(root->data)[5]);
