@@ -1,12 +1,14 @@
 #include "util.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "SDL.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <unistd.h>
 #endif
+
 
 const int default_is_player_turn = 1;
 const int default_variance = 20;
