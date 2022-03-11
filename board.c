@@ -1,4 +1,4 @@
-#include "util.h"
+#include "general.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

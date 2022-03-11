@@ -1,4 +1,4 @@
-#include "util.h"
+#include "general.h"
 // #include <stdio.h> // For debugging
 
 int get_priority(int moves_amount, int bias,  int column_size, int row_size, int *board) {

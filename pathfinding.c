@@ -1,4 +1,4 @@
-#include "util.h"
+#include "general.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -40,7 +40,7 @@ listItem* find_by_board(listItem *root, int *board, int len) {
     return NULL;
 }
 
-int* A_star(int column_size, int row_size, int bias, int *empty_field, int *board) {
+int* A_star(int column_size, int row_size, int bias, int *empty_field, int *board, int print_progress) {
     int i, prev_node, dir, moves_amount, turn_return, board_id, len = column_size * row_size;
     int *data, *current_board, *next_board, current_empty_field[2], *next_empty_field, directions[4] = {UP, RIGHT, DOWN, LEFT};
     listItem *current_node;
@@ -104,7 +104,9 @@ int* A_star(int column_size, int row_size, int bias, int *empty_field, int *boar
         insert(used_stack, copy_item(root, 1));
         root = shift(root);
         
-        printf("\rStack Height: %i   -   Used Stack Height: %i   -   Best Priority: %i   -   Root ID: %i   -   Turn Counter: %i  ", get_list_len(root), get_list_len(used_stack), root->weight, root->id, (root->data)[1]);
+        if (print_progress) {
+            printf("\rStack Height: %i   -   Used Stack Height: %i   -   Best Priority: %i   -   Root ID: %i   -   Turn Counter: %i  ", get_list_len(root), get_list_len(used_stack), root->weight, root->id, (root->data)[1]);
+        }
         
         // printf("\n\n\n");
         // show_board(column_size, row_size, &(root->data)[5]);

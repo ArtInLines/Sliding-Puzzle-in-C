@@ -42,7 +42,7 @@ char* get_direction_string(int direction);
 
 // Pathfinding:
 
-int* A_star(int column_size, int row_size, int bias, int *empty_field, int *board);
+int* A_star(int column_size, int row_size, int bias, int *empty_field, int *board, int print_progress);
 
 int* A_star_mem_efficient(int column_size, int row_size, int *empty_field, int *board);
 

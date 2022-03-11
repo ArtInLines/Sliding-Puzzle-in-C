@@ -1,4 +1,4 @@
-#include "util.h"
+#include "general.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -91,7 +91,7 @@ int main() {
             direction = get_direction(inverted);
             
             if (direction == GETHELP) {
-                int *path = A_star(column_size, row_size, bias, empty_field, board);
+                int *path = A_star(column_size, row_size, bias, empty_field, board, 1);
                 direction = path[0];
                 free(path);
             }
@@ -121,7 +121,7 @@ int main() {
     if (!is_player_turn) {
     FINISH_PUZZLE:
         printf("Processing... \n");
-        int *path = A_star(column_size, row_size, bias, empty_field, board);
+        int *path = A_star(column_size, row_size, bias, empty_field, board, 1);
         printf("done!\n");
         int i = 0;
         while (path[i] != -1) {
