@@ -1,6 +1,8 @@
-#include "general.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "general.h"
+#include "pathfinding.h" // "oldPathfinding.h";
 
 #ifdef _WIN32
 #include <windows.h>
@@ -8,11 +10,13 @@
 #include <unistd.h>
 #endif
 
+
 const int default_is_player_turn = 1;
 const int default_variance = 20;
 const int default_inverted = 0;
 const int default_bias = 10;
 const int default_sleep_time = 500;
+
 
 void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *is_player_turn, int *variance, int *inverted, int *bias, int *sleep_time) {
     char *puzzle_size_string = "Wondeful, you chose to play on a %ix%i board\n";

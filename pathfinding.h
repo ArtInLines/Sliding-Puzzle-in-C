@@ -1,0 +1,1 @@
+int* A_star(int column_size, int row_size, int bias, int *empty_field, int *board, int print_progress);
