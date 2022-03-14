@@ -2,6 +2,8 @@ typedef struct dynamicArr binaryHeap;
 
 binaryHeap *binHeap_new(int initialCapacity);
 
+void binHeap_free(binaryHeap *A);
+
 element binHeap_peek(binaryHeap *A);
 
 element binHeap_poll(binaryHeap **A);

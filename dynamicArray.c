@@ -13,6 +13,11 @@ dynamicArr *dynArr_new(int length) {
     return arr;
 }
 
+void dynArr_free(dynamicArr *arr) {
+    free(arr->list);
+    free(arr);
+}
+
 element dynArr_peek(dynamicArr *arr) {
     return dynArr_get(arr, 0);
 }
@@ -45,8 +50,7 @@ dynamicArr *dynArr_removeAt(dynamicArr **A, int index) {
         for (i = 0; i < index; i++) arr->list[i] = tmp->list[i];
         for (i = index; i < tmp->len; i++) arr->list[i] = tmp->list[i+1];
 
-        free(tmp->list);
-        free(tmp);
+        dynArr_free(tmp);
         return arr;
     } else {
         arr->len--;
@@ -56,8 +60,9 @@ dynamicArr *dynArr_removeAt(dynamicArr **A, int index) {
 }
 
 dynamicArr *dynArr_insert(dynamicArr **A, int index, element el) {
-    dynamicArr *arr = *A;
     printf("Inserting %i at position %i\nLength: %i, Capacity: %i\n", el.id, index, (*A)->len, (*A)->capacity);
+    
+    dynamicArr *arr = *A;
     if (arr->capacity > arr->len) {
         arr->len++;
         for (int i = arr->len-1; i > index; i--) arr->list[i] = arr->list[i-1];
@@ -74,8 +79,7 @@ dynamicArr *dynArr_insert(dynamicArr **A, int index, element el) {
         arr->list[index] = el;
         for (i = index-1; i >= 0; i--) arr->list[i] = tmp->list[i];
         
-        free(tmp->list);
-        free(tmp);
+        dynArr_free(tmp);
         return arr;
     }
 }

@@ -8,6 +8,8 @@ typedef struct dynamicArr {
 
 dynamicArr *dynArr_new(int length);
 
+void dynArr_free(dynamicArr *arr);
+
 element dynArr_get(dynamicArr *arr, int index);
 
 element *dynArr_getRef(dynamicArr *arr, int index);

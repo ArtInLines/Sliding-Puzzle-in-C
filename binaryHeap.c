@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "element.h"
+// #include "util.h"
 #include "dynamicArray.h"
 #include "binaryHeap.h"
 
@@ -9,6 +10,10 @@
 
 binaryHeap *binHeap_new(int initialCapacity) {
     return dynArr_new(initialCapacity);
+}
+
+void binHeap_free(binaryHeap *A) {
+    dynArr_free(A);
 }
 
 // TODO: Add methods to create heaps from arrays, see wikipedia site for different methods
@@ -47,20 +52,8 @@ element binHeap_remove(binaryHeap **A, int index) {
 
 // Returns new index, that node ends up at
 int binHeap_insert(binaryHeap **A, element node) {
-    printf("Pushing %i\n", node.id);
-    *A = dynArr_push(A, node);
-    
-    // char s[1000];
-    // binHeap_stringify(*A, s);
-    // printf("\nCurrent Heap:\n%s\n", s);
-    
-    int res = binHeap_fullSiftup(A, binHeap_lastLeafIndex(*A));
-    
-    // char s2[1000];
-    // binHeap_stringify(*A, s2);
-    // printf("\nCurrent Heap:\n%s\n", s2);
-    
-    return res;
+    dynArr_push(A, node);
+    return binHeap_fullSiftup(A, binHeap_lastLeafIndex(*A));
 }
 
 // Faster than removing old element and then inserting new element
@@ -83,7 +76,6 @@ int binHeap_replace(binaryHeap **A, int index, element node) {
 int binHeap_fullSiftup(binaryHeap **A, int index) {
     // index > 0 instead of >= 0, because we can't sift up further when we reached the top already
     while (index > 0) index = binHeap_siftup(A, index);
-    printf("Sifted up\n");
     return index;
 }
 
@@ -139,17 +131,10 @@ int binHeap_getParentIndex(int index) {
 }
 
 void binHeap_switchPositions(binaryHeap *A, int i, int j) {
-    // char s1[1000], s2[1000];
-    printf("Swtiching Positions %i, %i\n", i, j);
-    // binHeap_stringify(A, s1);
-    // printf("Heap before:\n%s\n\n", s1);
-    
+    // util_swapElements(&A->list[i], &A->list[j]);
     element tmp = A->list[i];
     A->list[i] = A->list[j];
     A->list[j] = tmp;
-    
-    // binHeap_stringify(A, s2);
-    // printf("Heap after:\n%s\n\n", s2);
 }
 
 int binHeap_contains(binaryHeap *A, element el) {

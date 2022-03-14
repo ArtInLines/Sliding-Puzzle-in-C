@@ -10,11 +10,15 @@ element El_getNull() {
 }
 
 int El_isInvalid(element *el) {
-    return El_eq(el, &NULL_EL);
+    return El_same(el, &NULL_EL);
+}
+
+int El_same(element *el1, element *el2) {
+    return (el1->id == el2->id);
 }
 
 int El_eq(element *el1, element *el2) {
-    return (el1->id == el2->id);
+    return (el1->weight == el2->weight);
 }
 
 int El_lt(element *el1, element *el2) {
