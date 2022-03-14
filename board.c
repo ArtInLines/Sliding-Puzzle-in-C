@@ -81,8 +81,8 @@ int* create_initial_board(int column_size, int row_size, int variance) {
     // swap_ints(&board[len-1-column_size], &board[len-2-column_size]);
 
     // Alternative test:
-    // int arr[10] = {4, 3, 5, 7, 1, 6, 8, 2, 0};
-    // for (int i = 0; i < len; i++) board[i] = arr[i];
+    int arr[10] = {4, 3, 5, 7, 0, 1, 6, 8, 2};
+    for (int i = 0; i < len; i++) board[i] = arr[i];
     
     return board;
 }

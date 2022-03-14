@@ -60,7 +60,7 @@ dynamicArr *dynArr_removeAt(dynamicArr **A, int index) {
 }
 
 dynamicArr *dynArr_insert(dynamicArr **A, int index, element el) {
-    printf("Inserting %i at position %i\nLength: %i, Capacity: %i\n", el.id, index, (*A)->len, (*A)->capacity);
+    // printf("Inserting %i at position %i  -  Length: %i, Capacity: %i\n", el.id, index, (*A)->len, (*A)->capacity);
     
     dynamicArr *arr = *A;
     if (arr->capacity > arr->len) {
@@ -90,6 +90,12 @@ dynamicArr *dynArr_push(dynamicArr **arr, element el) {
 
 element dynArr_pop(dynamicArr **arr) {
     element el = (*arr)->list[(*arr)->len-1];
+    
+    char s[100];
+    El_stringify(&el, s);
+    printf("Length = %i, Capacity = %i\n", (*arr)->len, (*arr)->capacity);
+    printf("Removing %s from end of array\n", s);
+    
     dynArr_removeAt(arr, (*arr)->len - 1);
     return el;
 }

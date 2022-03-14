@@ -10,6 +10,8 @@ element binHeap_poll(binaryHeap **A);
 
 element binHeap_get(binaryHeap *A, int index);
 
+element *binHeap_getRef(binaryHeap *A, int index);
+
 int binHeap_size(binaryHeap *A);
 
 int binHeap_isEmpty(binaryHeap *A);

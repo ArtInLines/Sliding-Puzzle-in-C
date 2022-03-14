@@ -47,6 +47,6 @@ int El_stringifyCapacity() {
 
 // See: http://www.cplusplus.com/reference/cstdio/snprintf/
 int El_stringify(element *el, char *s) {
-    int formatVal = sprintf(s, "(ID: %i:  %i  Prev: %i)", el->id, el->weight, el->prevID);
+    int formatVal = sprintf(s, "(ID: %i:  %i  Dir: %i, Prev: %i)", el->id, el->weight, el->direction, el->prevID);
     return formatVal;
 }

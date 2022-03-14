@@ -30,6 +30,10 @@ element binHeap_get(binaryHeap *A, int index) {
     return dynArr_get(A, index);
 }
 
+element *binHeap_getRef(binaryHeap *A, int index) {
+    return dynArr_getRef(A, index);
+}
+
 int binHeap_size(binaryHeap *A) {
     return dynArr_length(A);
 }
@@ -44,9 +48,13 @@ int binHeap_lastLeafIndex(binaryHeap *A) {
 
 // Returns element that was removed
 element binHeap_remove(binaryHeap **A, int index) {
+    printf("Removing element in Heap at pos %i\n", index);
     binHeap_switchPositions(*A, index, binHeap_lastLeafIndex(*A));
+    printf("Moved element to the bottom of the heap\n");
     element res = dynArr_pop(A);
+    printf("Removed element from the bottom\n");
     binHeap_fullSiftdown(A, index);
+    printf("Moved previously last element down again\n");
     return res;
 }
 
@@ -163,7 +171,7 @@ int binHeap_stringifyCapacity(binaryHeap *A) {
 // Returns 0 if the capacity wasn't sufficient
 // Returns a negative value for any other error
 int binHeap_stringify(binaryHeap *A, char *s) {
-    char elStr[10];
+    char elStr[100];
     s[0] = '\0'; // Reloads the String, effectively ignoring all data stored there before
     int i = 0, width = 1, widthStartIndex = 0, formatVal;
     

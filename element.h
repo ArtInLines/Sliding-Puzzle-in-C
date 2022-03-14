@@ -15,6 +15,8 @@ element El_getNull();
 
 int El_isInvalid(element *el);
 
+int El_same(element *el1, element *el2);
+
 int El_eq(element *el1, element *el2);
 
 int El_lt(element *el1, element *el2);
