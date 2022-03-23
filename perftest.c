@@ -1,3 +1,6 @@
+// TO build run the following command:
+// gcc perftest.c board.c priority.c test.c util.c play.c pathfinding.c -o perftest.exe
+
 #include "general.h"
 #include <time.h>
 #include <stdlib.h>
@@ -49,16 +52,17 @@ void main() {
     
     while (1) {
         printf("Column Size? ");
-        scanf("%d", &column_size);
+        scanf("4%d", &column_size);
         
         printf("Row Size? ");
-        scanf("%d", &row_size);
+        scanf("4%d", &row_size);
         
         printf("Bias? ");
-        scanf("%d", &bias);
+        scanf("100%d", &bias);
         
-        printf("Variance? ");
-        scanf("%d", &variance);
+        printf("Variance (negative => Max. Integer)? ");
+        scanf("1000%d", &variance);
+        if (variance < 0) variance = INT_MAX;
         
         run_test(column_size, row_size, bias, variance);
         printf("\n\n");

@@ -1,3 +1,6 @@
+// To build, run the following command:
+// gcc main.c board.c priority.c test.c util.c play.c pathfinding.c -o main.exe
+
 #include "general.h"
 #include <stdlib.h>
 #include <stdio.h>
