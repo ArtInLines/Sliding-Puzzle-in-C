@@ -52,16 +52,16 @@ void main() {
     
     while (1) {
         printf("Column Size? ");
-        scanf("4%d", &column_size);
+        scanf("%d", &column_size);
         
         printf("Row Size? ");
-        scanf("4%d", &row_size);
+        scanf("%d", &row_size);
         
         printf("Bias? ");
-        scanf("100%d", &bias);
+        scanf("%d", &bias);
         
         printf("Variance (negative => Max. Integer)? ");
-        scanf("1000%d", &variance);
+        scanf("%d", &variance);
         if (variance < 0) variance = INT_MAX;
         
         run_test(column_size, row_size, bias, variance);
