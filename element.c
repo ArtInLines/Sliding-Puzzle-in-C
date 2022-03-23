@@ -9,6 +9,12 @@ element El_getNull() {
     return NULL_EL;
 }
 
+void El_free(element *el) {
+    free(el->empty_field);
+    free(el->board);
+    // free(el);
+}
+
 int El_isInvalid(element *el) {
     return El_same(el, &NULL_EL);
 }

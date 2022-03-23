@@ -11,6 +11,8 @@ typedef struct element {
 } element;
 
 
+void El_free(element *el);
+
 element El_getNull();
 
 int El_isInvalid(element *el);

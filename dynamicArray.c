@@ -14,8 +14,22 @@ dynamicArr *dynArr_new(int length) {
 }
 
 void dynArr_free(dynamicArr *arr) {
+    char s[200];
+    
+    dynArr_stringify(arr, s);
+    printf("[%s]\n", s);
+    printf("Freeing all elements in the Array's list\n");
+    
+    for (int i = 0; i < arr->len; i++) El_free(&(arr->list[i]));
+    
+    dynArr_stringify(arr, s);
+    printf("[%s]\n", s);
+    printf("Freeing Array's list\n");
+    
     free(arr->list);
+    printf("Freeing Array itself\n");
     free(arr);
+    printf("Freed Array successfully\n");
 }
 
 element dynArr_peek(dynamicArr *arr) {
@@ -51,12 +65,12 @@ dynamicArr *dynArr_removeAt(dynamicArr **A, int index) {
         for (i = index; i < tmp->len; i++) arr->list[i] = tmp->list[i+1];
 
         dynArr_free(tmp);
-        return arr;
+        printf("Removed element at pos %i\n", index);
     } else {
         arr->len--;
         for (int i = index; i < arr->len; i++) arr->list[i] = arr->list[i+1];
-        return arr;
     }
+    return arr;
 }
 
 dynamicArr *dynArr_insert(dynamicArr **A, int index, element el) {
