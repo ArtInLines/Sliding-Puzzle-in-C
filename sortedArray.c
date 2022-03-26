@@ -18,6 +18,7 @@ sortedArr *sortArr_new() {
 }
 
 void sortArr_free(sortedArr *arr) {
+    // BUG: Program exits silently when freeing this memory
     for (int i = 0; i < arr->len; i++) El_free(&(arr->list[i]));
     free(arr->list);
     free(arr);

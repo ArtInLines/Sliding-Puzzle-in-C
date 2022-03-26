@@ -25,6 +25,7 @@ element *El_new(int weight, int moves_amount, int direction, int *empty_field, i
 }
 
 void El_free(element *el) {
+    // BUG: Freeing element leads to program exiting silently
     printf("Gonna free element now\n");
     free(el->empty_field);
     printf("Freed empty fieldd\n");
