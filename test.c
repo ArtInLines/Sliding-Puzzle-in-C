@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "general.h"
+#include "element.h"
+#include "sortedArray.h"
 
 
 void test_priority() {
@@ -98,4 +101,40 @@ void test_solvable() {
     }
     
     printf("Tests ended with %i our of %i succesful tests", test_amounts-fails, test_amounts);
+}
+
+void test_sortedArr() {
+    char s[1000];
+    sortedArr *A;
+    element *el;
+    int *empty_field, *board;
+    int test[10] = {4, 7, -100, 42, 88, -22, 4, 7, 18, 1};
+    element testEl[10];
+    
+    A = sortArr_new();
+    for (int i = 0; i < 10; i++) {
+        printf("Testing %i\n", i);
+        empty_field = malloc(2 * sizeof(int));
+        board = malloc(9 * sizeof(int));
+        
+        el = El_new(test[i], 0, 0, empty_field, board, i == 0 ? NULL : &testEl[i-1]);
+        testEl[i] = *el;
+        
+        El_stringify(el, s);
+        printf("%s\n", s);
+        
+        sortArr_insert(&A, testEl[i]);
+        
+        sortArr_stringify(A, s);
+        printf("[%s]\n", s);
+    }
+    
+    sortArr_stringify(A, s);
+    printf("[%s]\n", s);
+    
+    *el = sortArr_pop(&A);
+    sortArr_removeAt(&A, 3);
+    
+    sortArr_stringify(A, s);
+    printf("[%s]\n", s);
 }

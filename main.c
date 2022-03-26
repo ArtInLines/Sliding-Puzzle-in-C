@@ -66,6 +66,10 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
 int main() {
+    test_sortedArr();
+    return 1;
+    
+    
     int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0, *empty_field, inverted = 0, bias = 0, sleep_time = 0, advanced_setup;
     clear_screen();
     // Set up game

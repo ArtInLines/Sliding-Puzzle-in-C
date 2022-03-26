@@ -131,3 +131,5 @@ int get_priority(int moves_amount, int bias, int column_size, int row_size, int 
 void test_priority();
 
 void test_solvable();
+
+void test_sortedArr();

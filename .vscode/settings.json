@@ -1,7 +1,8 @@
 {
-    "files.associations": {
-        "*.pl": "prolog",
-        "*.rb": "ruby",
-        "util.h": "c"
-    }
+	"files.associations": {
+		"*.pl": "prolog",
+		"*.rb": "ruby",
+		"util.h": "c",
+		"sortedarray.h": "c"
+	}
 }
