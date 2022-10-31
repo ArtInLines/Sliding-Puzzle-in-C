@@ -6,7 +6,7 @@
 void move(int *pos1, int *pos2, int column_size, int *board) {
     int posIndex = pos_to_index(pos1, column_size);
     int emptyIndex = pos_to_index(pos2, column_size);
-    
+
     swap_ints(&board[posIndex], &board[emptyIndex]);
     pos2[0] = pos1[0];
     pos2[1] = pos1[1];
@@ -15,12 +15,12 @@ void move(int *pos1, int *pos2, int column_size, int *board) {
 int play_turn(int direction, int column_size, int row_size, int *board, int *empty_field, int inverted) {
     int *affected_field = get_new_pos(empty_field, direction);
     if (affected_field[0] == -1) return ILLEGAL_DIRECTION;
-    
+
     // printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
-    
+
     // Check if turn is possible
     if (affected_field[0] < 0 || affected_field[1] < 0 || affected_field[0] >= row_size || affected_field[1] >= column_size) return MOVE_OUTSIDE_BORDERS;
-    
+
     move(affected_field, empty_field, column_size, board);
     return SUCCESS;
 }
@@ -43,7 +43,7 @@ int get_opposite_direction(int direction) {
 int get_direction(int inverted) {
     char key;
     int direction;
-    
+
     GET_CHAR_LOOP:
         printf("\n");
         printf("To let the computer help you with the next move, press e\n");
@@ -60,7 +60,7 @@ int get_direction(int inverted) {
         else if (key == 'e' || key == 'E') direction = GETHELP;
         else if (key == 'q' || key == 'Q') direction = FINISH;
         else direction = ERROR;
-        
+
         if (inverted) direction = get_opposite_direction(direction);
     if (direction == ERROR) {
         printf("You donkey, how hard is it to follow instructions! Try again!\n");

@@ -14,7 +14,7 @@ int is_solved(int len, int *board) {
 int is_solvable(int column_size, int row_size, int *board) {
     if (solvable_helper(column_size, row_size, board) % 2) return 0; // For odd amounts of transpositions, the puzzle is not solvable
     else return 1; // For even amounts of transpositions, the puzzle is solvable
-    
+
     // See ./literature for mathematical proves of this fact!
 }
 
@@ -30,22 +30,23 @@ int solvable_helper(int column_size, int row_size, int *board) {
     // Move the empty field to the last position with legal moves, so it can be ignored
     while (empty_field[0] < row_size-1) play_turn(DOWN, column_size, row_size, board_copy, empty_field, 0);
     while (empty_field[1] < column_size-1) play_turn(RIGHT, column_size, row_size, board_copy, empty_field, 0);
-    
+
     // Loop through copied board (while ignoring empty field at last position)
     // When reaching an element out of order:
         // Swap the number with the number at the index, that this number should be at
         // i.e. if number 5 is at the first index, swap 5 with the number at the 5th index
-        // Increase the amount of transpositions   
+        // Increase the amount of transpositions
     for (i = 0; i < len-1; i++) {
         while (board_copy[i]-1 != i) {
             // Debugging
             // Print (index1 index2) - (value1 value2) - amount of currnet transpositions
             // printf("(%i %i)  -  (%i %i)  -  %i\n", i, board_copy[i]-1, board_copy[i], board_copy[board_copy[i]-1], transpositions_amount+1);
-            
+
             swap_ints(&board_copy[i], &board_copy[board_copy[i]-1]);
             transpositions_amount++;
         }
     }
+
 
     free(board_copy);
     return transpositions_amount;
@@ -60,10 +61,10 @@ int* get_empty_field(int column_size, int *board) {
 int* create_initial_board(int column_size, int row_size, int variance) {
     int len = column_size * row_size, i, r, empty_field = len - 1;
     int *board = malloc(len * sizeof(int));
-    
+
     // maybe do some more interesting calculation here someday:
     int swap_amount = variance;
-    
+
     // Fill & shuffle board
     srand(time(NULL)); // init rand()
     for (i = 0; i < len; i++) board[i] = i+1;
@@ -73,7 +74,7 @@ int* create_initial_board(int column_size, int row_size, int variance) {
         swap_ints(&board[empty_field], &board[r]);
         empty_field = r;
     }
-   
+
     // First test
     // for (int i = 0; i < len; i++) board[i] = i+1;
     // board[len-1] = 0;
@@ -83,7 +84,7 @@ int* create_initial_board(int column_size, int row_size, int variance) {
     // Alternative test:
     // int arr[10] = {4, 3, 5, 7, 1, 6, 8, 2, 0};
     // for (int i = 0; i < len; i++) board[i] = arr[i];
-    
+
     return board;
 }
 
@@ -97,7 +98,7 @@ int* get_new_pos(int *old_pos, int dir) {
     int *new_pos = malloc(2 * sizeof(int));
     new_pos[0] = old_pos[0];
     new_pos[1] = old_pos[1];
-    
+
     switch (dir) {
         case UP:
             new_pos[0]--;
@@ -137,22 +138,22 @@ void show_board(int column_size, int row_size, int *board) {
     // * * * * * * * * * *
     // *  7  *  8  *  -  *
     // * * * * * * * * * *
-    
+
     char border_char = '*', empty_field_char = '-';
     int len = column_size * row_size, i, j, cell;
     float cell_width = 4;
     char before_str[4] = "  ", after_str[4] = "  ";
-    
+
     print_row(&column_size, &cell_width, &border_char);
     for (i = 0; i < row_size; i++) {
         for (j = 0; j < column_size; j++) {
             cell = board[i*column_size + j];
-            
+
             if (cell >= 100) after_str[2] = 0;
             else after_str[2] = ' ';
             if (cell >= 10) before_str[2] = 0;
             else before_str[2] = ' ';
-            
+
             printf("%c%s", border_char, before_str);
             if (cell) printf("%i", cell);
             else printf("%c", empty_field_char);
