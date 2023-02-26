@@ -2,7 +2,9 @@
 
 This README certainly needs more additions to work as a documentation. Much of the code could also still be revised and improved. However, both the main program and the performance test work without any apparent bugs currently. Thus, this will be considered Version 1.0 right now.
 
-New versions are actively worked on in different branches, but whether they will ever be finished is rather unlikely.
+New versions were started to be developed in different branches, but it's rather unlikely that they will ever be finished.
+
+This is also the first project I wrote in C (outside of small homeworks for uni), so the code could probably be improved greatly with better knowledge of C.
 
 # Sliding Puzzle
 
