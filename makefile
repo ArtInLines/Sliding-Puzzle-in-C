@@ -1,5 +1,10 @@
-CC = gcc
-CFLAGS = -Wall -Wextra
+ifndef $(CC)
+	CC = gcc
+endif
+ifndef $(CFLAGS)
+	CFLAGS = -Wall -Wextra -Wpedantic -std=c99
+endif
+
 Files = board.c priority.c test.c util.c play.c pathfinding.c
 
 # To Build Main Program:

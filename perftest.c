@@ -47,7 +47,7 @@ void run_test(int column_size, int row_size, int bias, int variance) {
 
 }
 
-void main() {
+int main(void) {
     int column_size, row_size, bias, variance;
     clear_screen();
 
@@ -68,4 +68,5 @@ void main() {
         run_test(column_size, row_size, bias, variance);
         printf("\n\n");
     }
+    return 0;
 }

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 void move(int *pos1, int *pos2, int column_size, int *board) {
     int posIndex = pos_to_index(pos1, column_size);
     int emptyIndex = pos_to_index(pos2, column_size);
@@ -12,7 +11,7 @@ void move(int *pos1, int *pos2, int column_size, int *board) {
     pos2[1] = pos1[1];
 }
 
-int play_turn(int direction, int column_size, int row_size, int *board, int *empty_field, int inverted) {
+int play_turn(int direction, int column_size, int row_size, int *board, int *empty_field) {
     int *affected_field = get_new_pos(empty_field, direction);
     if (affected_field[0] == -1) return ILLEGAL_DIRECTION;
 
@@ -25,43 +24,32 @@ int play_turn(int direction, int column_size, int row_size, int *board, int *emp
     return SUCCESS;
 }
 
-int get_opposite_direction(int direction) {
-    switch (direction) {
-    case UP:
-        return DOWN;
-    case RIGHT:
-        return LEFT;
-    case DOWN:
-        return UP;
-    case LEFT:
-        return RIGHT;
-    default:
-        return ERROR;
-    }
+int invert_direction(int dir)
+{
+    if (dir < 5) return (~dir) & 3;
+    return dir;
 }
 
 int get_direction(int inverted) {
     char key;
     int direction;
 
-    GET_CHAR_LOOP:
-        printf("\n");
-        printf("To let the computer help you with the next move, press e\n");
-        printf("To let the computer finish this puzzle, press q\n");
-        printf("Make a move using w-a-s-d:  ");
-        key = getchar();
-        while ('\n'!=getchar());
-        // putchar(key);
-        // printf("\nGotten key %c with code %i\n", key, (int) key);
-        if (key == 'w' || key == 'W') direction = UP;
-        else if (key == 'a' || key == 'A') direction = LEFT;
-        else if (key == 's' || key == 'S') direction = DOWN;
-        else if (key == 'd' || key == 'D') direction = RIGHT;
-        else if (key == 'e' || key == 'E') direction = GETHELP;
-        else if (key == 'q' || key == 'Q') direction = FINISH;
-        else direction = ERROR;
+GET_CHAR_LOOP:
+    printf("\n");
+    printf("To let the computer help you with the next move, press e\n");
+    printf("To let the computer finish this puzzle, press q\n");
+    printf("Make a move using w-a-s-d:  ");
+    getchar(); // I don't exactly know why this is needed tbh xd
+    key = getchar();
+    if      (key == 'w' || key == 'W') direction = UP;
+    else if (key == 'a' || key == 'A') direction = LEFT;
+    else if (key == 's' || key == 'S') direction = DOWN;
+    else if (key == 'd' || key == 'D') direction = RIGHT;
+    else if (key == 'e' || key == 'E') direction = GETHELP;
+    else if (key == 'q' || key == 'Q') direction = FINISH;
+    else direction = ERROR;
 
-        if (inverted) direction = get_opposite_direction(direction);
+    if (inverted) direction = invert_direction(direction);
     if (direction == ERROR) {
         printf("You donkey, how hard is it to follow instructions! Try again!\n");
         goto GET_CHAR_LOOP;

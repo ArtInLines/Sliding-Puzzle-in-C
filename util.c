@@ -7,7 +7,7 @@ int distance(int x, int y) {
     else return y - x;
 }
 
-int swap_ints(int *x, int *y) {
+void swap_ints(int *x, int *y) {
     int tmp = *x;
     *x = *y;
     *y = tmp;
@@ -63,6 +63,7 @@ listItem* create_item(int id, int weight, void *data, int size) {
     ptr->size = size;
     ptr->prev = NULL;
     ptr->next = NULL;
+    return ptr;
 }
 
 listItem* copy_item(listItem *item, int keep_id) {
@@ -78,6 +79,7 @@ listItem* copy_item(listItem *item, int keep_id) {
     for (int i = 0, len = item->size / sizeof(int); i < len; i++) (ptr->data)[i] = (item->data)[i];
     ptr->prev = NULL;
     ptr->next = NULL;
+    return ptr;
 }
 
 listItem* insert(listItem *last_item, listItem *new_el) {
@@ -104,19 +106,19 @@ listItem* get_root(listItem *item) {
 
 listItem* find_by_id(int id, listItem *root) {
     if (root->id == id) return root;
-    
+
     listItem *tmp = root;
     while (tmp->next) {
         tmp = tmp->next;
         if (tmp->id == id) return tmp;
     }
-    
+
     tmp = root;
     while(tmp->prev) {
         tmp = tmp->prev;
         if (tmp->id == id) return tmp;
     }
-    
+
     return NULL;
 }
 
@@ -148,7 +150,9 @@ listItem* shift(listItem *root) {
 }
 
 listItem* sort(listItem *root) {
-    // TODO
+    // @TODO
+    (void)root;
+    return NULL;
 }
 
 listItem* insert_sorted(listItem *root, listItem *new_el, int skip_root) {
@@ -160,7 +164,7 @@ listItem* insert_sorted(listItem *root, listItem *new_el, int skip_root) {
     while (tmp->next != NULL) {
         if (new_el->weight <= tmp->weight) return insert(tmp->prev, new_el);
         else tmp = tmp->next;
-    }    
+    }
     if (new_el->weight <= tmp->weight) return insert(tmp->prev, new_el);
     else return insert(tmp, new_el);
 }

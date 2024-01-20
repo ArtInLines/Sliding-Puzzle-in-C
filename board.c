@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-int is_solved(int len, int *board) {
-    int i = 0;
-    while (i < len-1) if (board[i] != ++i) return 0;
+bool is_solved(int len, int *board) {
+    for (int i = 0; i < len-1; i++)
+        if (board[i] != i+1) return false;
     // Last field doesn't have to be checked,
     // as long as all others are placed correctly
-    return 1;
+    return true;
 }
 
 int is_solvable(int column_size, int row_size, int *board) {
@@ -19,7 +19,7 @@ int is_solvable(int column_size, int row_size, int *board) {
 }
 
 int solvable_helper(int column_size, int row_size, int *board) {
-    int i, cell, transpositions_amount = 0, len = column_size * row_size;
+    int i, transpositions_amount = 0, len = column_size * row_size;
     // Create copy of board where empty field is equal to the highest numbr (since it should be at the end of the board)
     int *empty_field = malloc(2 * sizeof(int));
     int *board_copy = malloc(len * sizeof(int));
@@ -28,8 +28,8 @@ int solvable_helper(int column_size, int row_size, int *board) {
         if (!board_copy[i]) empty_field = index_to_pos(i, column_size);
     }
     // Move the empty field to the last position with legal moves, so it can be ignored
-    while (empty_field[0] < row_size-1) play_turn(DOWN, column_size, row_size, board_copy, empty_field, 0);
-    while (empty_field[1] < column_size-1) play_turn(RIGHT, column_size, row_size, board_copy, empty_field, 0);
+    while (empty_field[0] < row_size-1) play_turn(DOWN, column_size, row_size, board_copy, empty_field);
+    while (empty_field[1] < column_size-1) play_turn(RIGHT, column_size, row_size, board_copy, empty_field);
 
     // Loop through copied board (while ignoring empty field at last position)
     // When reaching an element out of order:
@@ -140,7 +140,7 @@ void show_board(int column_size, int row_size, int *board) {
     // * * * * * * * * * *
 
     char border_char = '*', empty_field_char = '-';
-    int len = column_size * row_size, i, j, cell;
+    int i, j, cell;
     float cell_width = 4;
     char before_str[4] = "  ", after_str[4] = "  ";
 
