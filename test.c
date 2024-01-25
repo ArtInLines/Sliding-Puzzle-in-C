@@ -5,7 +5,7 @@
 void test_priority() {
     int fails = 0;
     int test_amounts = 2;
-    int tests[] = {
+    u8 tests[] = {
     // expected_hamming, expected_manhattan, column_size, row_size,
         // *board
         1, 5, 10, 3, 3,
@@ -18,7 +18,7 @@ void test_priority() {
             9, 10, 11, 1
     };
 
-    int i, bias, expected_hamming, expected_manhattan, hamming_res, manhattan_res, column_size, row_size, index = 0;
+    u8 i, bias, expected_hamming, expected_manhattan, hamming_res, manhattan_res, column_size, row_size, index = 0;
 
     for (i = 0; i < test_amounts; i++) {
         bias = tests[index++];
@@ -29,8 +29,8 @@ void test_priority() {
 
         // printf("\n%i - %i - %i - %i\n", expected_hamming, expected_manhattan, column_size, row_size);
 
-        hamming_res = hamming(0, bias, column_size, row_size, &tests[index]);
-        manhattan_res = manhattan(0, bias, column_size, row_size, &tests[index]);
+        hamming_res   = hamming  (0, bias, (Board){column_size, row_size, &tests[index]});
+        manhattan_res = manhattan(0, bias, (Board){column_size, row_size, &tests[index]});
 
         if (hamming_res == expected_hamming) printf("Hamming test #%i successful\n", i+1);
         else {
@@ -53,7 +53,7 @@ void test_priority() {
 void test_solvable() {
     int fails = 0;
     int test_amounts = 4;
-    int tests[] = {
+    u8 tests[] = {
     // expected_transpositions, expected_solvable, column_size, row_size,
         // *board
         1, 0, 4, 4,
@@ -77,7 +77,7 @@ void test_solvable() {
             7, 8, 6
     };
 
-    int i, expected_solvable, solvable_res, column_size, row_size, index = 0;
+    u8 i, expected_solvable, solvable_res, column_size, row_size, index = 0;
 
     for (i = 0; i < test_amounts; i++) {
         expected_solvable = tests[index++];
@@ -85,7 +85,7 @@ void test_solvable() {
         row_size = tests[index++];
 
         // transpositions_res = count_transpositions(len, &tests[index]);
-        solvable_res = is_solvable(column_size, row_size, &tests[index]);
+        solvable_res = is_solvable((Board){column_size, row_size, &tests[index]});
 
         if (solvable_res == expected_solvable) printf("is_solvable() test #%i successful\n", i+1);
         else {

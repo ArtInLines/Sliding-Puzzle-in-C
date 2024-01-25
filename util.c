@@ -2,33 +2,50 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+#include <Windows.h> // For clearing terminal screen on windows
+#include <conio.h>   // For getch
+#elif
+#include <termios.h> // termios, TCSANOW, ECHO, ICANON
+#include <unistd.h>  // STDIN_FILENO
+#endif
+
 int distance(int x, int y) {
     if (x >= y) return x - y;
     else return y - x;
 }
 
-void swap_ints(int *x, int *y) {
-    int tmp = *x;
-    *x = *y;
-    *y = tmp;
+Pos index_to_pos(int index, int column_size) {
+    return (Pos) {
+        index / column_size,
+        index % column_size
+    };
 }
 
-int* index_to_pos(int index, int column_size) {
-    int *pos = malloc(2 * sizeof(int));
-    pos[0] = (int) index / column_size;
-    pos[1] = index % column_size;
-    return pos;
+int pos_to_index(Pos pos, int column_size) {
+    return pos.x*column_size + pos.y;
 }
 
-int pos_to_index(int *pos, int column_size) {
-    return pos[0]*column_size + pos[1];
-}
+void clear_screen()
+{
+#ifdef _WIN32
+    COORD topLeft  = { 0, 0 };
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO screen;
+    DWORD written;
 
-// Clear Console
-// system() is very resource-intensive & shouldn't be used,
-// but for now it's fine
-void clear_screen() {
+    GetConsoleScreenBufferInfo(console, &screen);
+    FillConsoleOutputCharacterA(
+        console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+    );
+    FillConsoleOutputAttribute(
+        console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
+        screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+    );
+    SetConsoleCursorPosition(console, topLeft);
+#else
     if (system("CLS")) system("clear");
+#endif
 }
 
 int rand_int() {

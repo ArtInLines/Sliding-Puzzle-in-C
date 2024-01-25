@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-bool is_solved(int len, int *board) {
+bool is_solved(int len, u8 *board) {
     for (int i = 0; i < len-1; i++)
         if (board[i] != i+1) return false;
     // Last field doesn't have to be checked,
@@ -11,25 +11,25 @@ bool is_solved(int len, int *board) {
     return true;
 }
 
-int is_solvable(int column_size, int row_size, int *board) {
-    if (solvable_helper(column_size, row_size, board) % 2) return 0; // For odd amounts of transpositions, the puzzle is not solvable
-    else return 1; // For even amounts of transpositions, the puzzle is solvable
-
+bool is_solvable(Board board) {
+    if (solvable_helper(board) % 2) return false; // For odd amounts of transpositions, the puzzle is not solvable
+    else return true; // For even amounts of transpositions, the puzzle is solvable
     // See ./literature for mathematical proves of this fact!
 }
 
-int solvable_helper(int column_size, int row_size, int *board) {
-    int i, transpositions_amount = 0, len = column_size * row_size;
+int solvable_helper(Board board) {
+    int i, transpositions_amount = 0, len = board.cols * board.rows;
     // Create copy of board where empty field is equal to the highest numbr (since it should be at the end of the board)
-    int *empty_field = malloc(2 * sizeof(int));
-    int *board_copy = malloc(len * sizeof(int));
+    Pos empty_field;
+    u8 *fields_copy = malloc(len * sizeof(u8));
     for (i = 0; i < len; i++) {
-        board_copy[i] = board[i];
-        if (!board_copy[i]) empty_field = index_to_pos(i, column_size);
+        fields_copy[i] = board.fields[i];
+        if (!fields_copy[i]) empty_field = index_to_pos(i, board.cols);
     }
+    Board board_copy = copy_board(board);
     // Move the empty field to the last position with legal moves, so it can be ignored
-    while (empty_field[0] < row_size-1) play_turn(DOWN, column_size, row_size, board_copy, empty_field);
-    while (empty_field[1] < column_size-1) play_turn(RIGHT, column_size, row_size, board_copy, empty_field);
+    while (empty_field.x < board.rows-1) play_turn(DOWN, board_copy, &empty_field);
+    while (empty_field.y < board.cols-1) play_turn(RIGHT, board_copy, &empty_field);
 
     // Loop through copied board (while ignoring empty field at last position)
     // When reaching an element out of order:
@@ -37,99 +37,86 @@ int solvable_helper(int column_size, int row_size, int *board) {
         // i.e. if number 5 is at the first index, swap 5 with the number at the 5th index
         // Increase the amount of transpositions
     for (i = 0; i < len-1; i++) {
-        while (board_copy[i]-1 != i) {
-            // Debugging
-            // Print (index1 index2) - (value1 value2) - amount of currnet transpositions
-            // printf("(%i %i)  -  (%i %i)  -  %i\n", i, board_copy[i]-1, board_copy[i], board_copy[board_copy[i]-1], transpositions_amount+1);
-
-            swap_ints(&board_copy[i], &board_copy[board_copy[i]-1]);
+        while (board_copy.fields[i]-1 != i) {
+            u8 idx = board_copy.fields[i] == 0 ? len-1 : board_copy.fields[i]-1;
+            AIL_SWAP(board_copy.fields[i], board_copy.fields[idx]);
             transpositions_amount++;
         }
     }
 
 
-    free(board_copy);
+    free(board_copy.fields);
     return transpositions_amount;
 }
 
-int* get_empty_field(int column_size, int *board) {
+Pos get_empty_field(int column_size, u8 *board) {
     int i = 0;
     while (board[i]) i++;
     return index_to_pos(i, column_size);
 }
 
-int* create_initial_board(int column_size, int row_size, int variance) {
-    int len = column_size * row_size, i, r, empty_field = len - 1;
-    int *board = malloc(len * sizeof(int));
+Board create_initial_board(int cols, int rows, int variance) {
+    int len = cols * rows, i, r, empty_field = len - 1;
+    Board board = { rows, cols, malloc(len * sizeof(int)) };
 
     // maybe do some more interesting calculation here someday:
     int swap_amount = variance;
 
     // Fill & shuffle board
     srand(time(NULL)); // init rand()
-    for (i = 0; i < len; i++) board[i] = i+1;
-    board[empty_field] = 0;
-    for (i = 0; i < swap_amount || !is_solvable(column_size, row_size, board) || is_solved(len, board); i++) {
+    for (i = 0; i < len; i++) board.fields[i] = i+1;
+    board.fields[empty_field] = 0;
+    for (i = 0; i < swap_amount || !is_solvable(board) || is_solved(len, board.fields); i++) {
         do { r = rand() % len; } while (r == empty_field);
-        swap_ints(&board[empty_field], &board[r]);
+        AIL_SWAP(board.fields[empty_field], board.fields[r]);
         empty_field = r;
     }
-
-    // First test
-    // for (int i = 0; i < len; i++) board[i] = i+1;
-    // board[len-1] = 0;
-    // swap_ints(&board[len-1], &board[len-1-column_size]);
-    // swap_ints(&board[len-1-column_size], &board[len-2-column_size]);
-
-    // Alternative test:
-    // int arr[10] = {4, 3, 5, 7, 1, 6, 8, 2, 0};
-    // for (int i = 0; i < len; i++) board[i] = arr[i];
 
     return board;
 }
 
-int* copy_board(int len, int *board) {
-    int *new_board = malloc(len * sizeof(int));
-    for (int i = 0; i < len; i++) new_board[i] = board[i];
-    return new_board;
+Board copy_board(Board board) {
+    u16 len = board.rows * board.cols;
+    u8 *fields = malloc(len * sizeof(u8));
+    for (u16 i = 0; i < len; i++) fields[i] = board.fields[i];
+    return (Board) {
+        board.rows,
+        board.cols,
+        fields,
+    };
 }
 
-int* get_new_pos(int *old_pos, int dir) {
-    int *new_pos = malloc(2 * sizeof(int));
-    new_pos[0] = old_pos[0];
-    new_pos[1] = old_pos[1];
-
+Pos next_pos(Pos pos, Dir dir) {
     switch (dir) {
         case UP:
-            new_pos[0]--;
+            pos.x--;
             break;
         case DOWN:
-            new_pos[0]++;
+            pos.x++;
             break;
         case RIGHT:
-            new_pos[1]++;
+            pos.y++;
             break;
         case LEFT:
-            new_pos[1]--;
+            pos.y--;
             break;
         default:
-            new_pos[0] = -1;
-            new_pos[1] = -1;
+            pos.x = -1;
+            pos.y = -1;
     }
-    return new_pos;
+    return pos;
 }
 
 
 // Print Board:
 
-void print_row(int *column_size, float *cell_width, char *border_char) {
-    for (int i = 0, len = (*column_size) * (*cell_width); i < len; i++) {
-        printf("%c ", *border_char);
-    }
-    printf("%c\n", *border_char);
-}
+#define __board_print_row(cols, cell_width, border_char)                                                                           \
+    for (int __print_row_idx = 0, __print_row_len = (cols) * (cell_width); __print_row_idx < __print_row_len; __print_row_idx++) { \
+        printf("%c ", (border_char));                                                                                              \
+    }                                                                                                                              \
+    printf("%c\n", (border_char));
 
-void show_board(int column_size, int row_size, int *board) {
+void show_board(Board board) {
     // Prints the following for a finished 8-puzzle board:
     // * * * * * * * * * *
     // *  1  *  2  *  3  *
@@ -144,10 +131,10 @@ void show_board(int column_size, int row_size, int *board) {
     float cell_width = 4;
     char before_str[4] = "  ", after_str[4] = "  ";
 
-    print_row(&column_size, &cell_width, &border_char);
-    for (i = 0; i < row_size; i++) {
-        for (j = 0; j < column_size; j++) {
-            cell = board[i*column_size + j];
+    __board_print_row(board.cols, cell_width, border_char);
+    for (i = 0; i < board.rows; i++) {
+        for (j = 0; j < board.cols; j++) {
+            cell = board.fields[i*board.cols + j];
 
             if (cell >= 100) after_str[2] = 0;
             else after_str[2] = ' ';
@@ -160,26 +147,11 @@ void show_board(int column_size, int row_size, int *board) {
             printf(after_str);
         }
         printf("%c\n", border_char);
-        print_row(&column_size, &cell_width, &border_char);
+        __board_print_row(board.cols, cell_width, border_char);
     }
 }
 
-int compare_board(int *board1, int *board2, int len) {
+int compare_board(u8 *board1, u8 *board2, int len) {
     for (int i = 0; i < len; i++) if(board1[i] != board2[i]) return 0;
     return 1;
 }
-
-// int my_pow(int x, int n) {
-//     for (int i = 1; i < n; i++) x *= x;
-//     return x;
-// }
-
-// int create_board_id(int *board, int len) {
-//     int id = board[0];
-//     for (int i = 1; i < len; i++) {
-//         // id ^= (board[i] << (i % (sizeof(int) * 8)));
-//         id += my_pow(10, i) * board[i];
-//         printf("i: %i - ID: %i\n", i, id);
-//     }
-//     return id;
-// }

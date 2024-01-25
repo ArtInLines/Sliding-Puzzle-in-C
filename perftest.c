@@ -10,25 +10,21 @@ double get_time(void) {
   return (double)clock() / CLOCKS_PER_SEC;
 }
 
-double create_initial_board_test(int column_size, int row_size, int variance) {
+double create_initial_board_test(Board *board, int column_size, int row_size, int variance) {
     double begin_time, end_time;
     begin_time = get_time();
-    int *board = create_initial_board(column_size, row_size, variance);
-    end_time = get_time();
-    free(board);
+    *board     = create_initial_board(column_size, row_size, variance);
+    end_time   = get_time();
     return end_time - begin_time;
 }
 
-double A_star_test(int column_size, int row_size, int bias, int variance) {
-    int *empty_field, *board, *path;
+double A_star_test(Board board, int bias) {
     double begin_time, end_time;
-
-    board = create_initial_board(column_size, row_size, variance);
-    empty_field = get_empty_field(column_size, board);
-
-    begin_time = get_time();
-    path = A_star(column_size, row_size, bias, empty_field, board, 0);
-    end_time = get_time();
+    Pos empty_field = get_empty_field(board.cols, board.fields);
+    int p[2]        = {empty_field.x, empty_field.y};
+    begin_time      = get_time();
+    int *path       = A_star(board.cols, board.rows, bias, p, board.fields, 0);
+    end_time        = get_time();
     free(path);
 
     return end_time - begin_time;
@@ -39,10 +35,11 @@ void run_test(int column_size, int row_size, int bias, int variance) {
 
     printf("\rsize=%ix%i, variance=%i, bias=%i, ", column_size, row_size, variance, bias);
 
-    create_board_time = create_initial_board_test(column_size, row_size, variance);
+    Board board;
+    create_board_time = create_initial_board_test(&board, column_size, row_size, variance);
     printf("create_board_time=%.4fs, ", create_board_time);
 
-    a_star_time = A_star_test(column_size, row_size, bias, variance);
+    a_star_time = A_star_test(board, bias);
     printf("solve_time=%3.4fs", a_star_time);
 
 }

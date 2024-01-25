@@ -13,7 +13,7 @@ int get_data_size(int len){
     return (int) sizeof(int) * (len + 5);
 }
 
-int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_field, int *board) {
+int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_field, u8 *board) {
     int *data = malloc(get_data_size(len));
     int i = 0;
     data[i] = prev_node; i++;
@@ -21,7 +21,7 @@ int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_f
     data[i] = dir; i++;
     data[i] = empty_field[0]; i++;
     data[i] = empty_field[1]; i++;
-    for (int diff = i, i = 0; i < len; i++) data[i+diff] = board[i];
+    memcpy((u8 *)&data[i], board, len);
 
     // Debugging
     // printf("Creating Data:\n");
@@ -30,25 +30,27 @@ int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_f
     return data;
 }
 
-listItem* find_by_board(listItem *root, int *board, int len) {
+listItem* find_by_board(listItem *root, u8 *board, int len) {
     listItem *tmp = root;
-    if (compare_board(board, &(tmp->data)[5], len)) return tmp;
+    if (compare_board(board, (u8 *)&(tmp->data)[5], len)) return tmp;
     while (tmp->next!=NULL) {
         tmp = tmp->next;
-        if (compare_board(board, &(tmp->data)[5], len)) return tmp;
+        if (compare_board(board, (u8 *)&(tmp->data)[5], len)) return tmp;
     }
     return NULL;
 }
 
-int* A_star(int column_size, int row_size, int bias, int *empty_field, int *board, int print_progress) {
+int* A_star(int column_size, int row_size, int bias, int *empty_field, u8 *board, int print_progress) {
     int i, prev_node, dir, moves_amount, turn_return, len = column_size * row_size;
-    int *data, *current_board, *next_board, current_empty_field[2], *next_empty_field, directions[4] = {UP, RIGHT, DOWN, LEFT};
+    int *data, current_empty_field[2], next_empty_field[2], directions[4] = {UP, RIGHT, DOWN, LEFT};
+    u8 *current_board;
+    Board next_board;
 
     data = create_data(len, 0, 0, -1, empty_field, board);
     int data_size = get_data_size(len);
 
     listItem *node;
-    listItem *root = create_item(0, get_priority(0, bias, column_size, row_size, board), data, data_size);
+    listItem *root = create_item(0, get_priority(0, bias, (Board){column_size, row_size, board}), data, data_size);
     listItem *used_stack = create_item(0, 0, data, data_size);
 
     // printf("A* before while loop\n");
@@ -61,16 +63,18 @@ int* A_star(int column_size, int row_size, int bias, int *empty_field, int *boar
         dir = data[i]; i++;
         current_empty_field[0] = data[i]; i++;
         current_empty_field[1] = data[i]; i++;
-        current_board = &(data[i]);
+        current_board = (u8 *)&(data[i]);
         (void)dir;
 
         // Add new nodes for each direction (skipping illegal directions)
         for (i = 0; i < 4; i++) {
             if ((root->data)[2] == invert_direction(directions[i])) continue;
 
-            next_board = copy_board(len, current_board);
-            next_empty_field = copy_board(2, current_empty_field);
-            turn_return = play_turn(directions[i], column_size, row_size, next_board, next_empty_field);
+            next_board       = copy_board((Board) {column_size, row_size, current_board});
+            Pos next_empty_pos = {current_empty_field[0], current_empty_field[1]};
+            turn_return      = play_turn(directions[i], next_board, &next_empty_pos);
+            next_empty_field[0] = next_empty_pos.x;
+            next_empty_field[1] = next_empty_pos.y;
 
             if (turn_return != SUCCESS) continue;
 
@@ -80,13 +84,13 @@ int* A_star(int column_size, int row_size, int bias, int *empty_field, int *boar
             // printf("\nDirection: %i\n", directions[i]);
             // printf("next_board[4]: %i\n", next_board[4]);
 
-            data = create_data(len, root->id, moves_amount+1, directions[i], next_empty_field, next_board);
+            data = create_data(len, root->id, moves_amount+1, directions[i], next_empty_field, next_board.fields);
             // board_id = create_board_id(next_board, len);
-            node = create_item(0, get_priority(moves_amount+1, bias, column_size, row_size, next_board), data, data_size);
+            node = create_item(0, get_priority(moves_amount+1, bias, next_board), data, data_size);
             // print_list_item(node);
             // print_list_item_data(node);
 
-            if (find_by_board(used_stack, next_board, len) != NULL) continue;
+            if (find_by_board(used_stack, next_board.fields, len) != NULL) continue;
 
             // printf("New Node: "); print_list_item(node);
             // printf("Root: "); print_list_item(root);
@@ -116,7 +120,7 @@ int* A_star(int column_size, int row_size, int bias, int *empty_field, int *boar
 
         // printf("Looked at %i possible moves\n", get_list_len(used_stack));
 
-        if (is_solved(len, &(root->data)[5])) break;
+        if (is_solved(len, (u8 *)&(root->data)[5])) break;
     }
 
     // show_board(column_size, row_size, &(root->data)[5]);
@@ -135,7 +139,7 @@ int* A_star(int column_size, int row_size, int bias, int *empty_field, int *boar
     return path;
 }
 
-int* A_star_mem_efficient(int column_size, int row_size, int *empty_field, int *board) {
+int* A_star_mem_efficient(int column_size, int row_size, int *empty_field, u8 *board) {
     (void)column_size;
     (void)row_size;
     (void)empty_field;

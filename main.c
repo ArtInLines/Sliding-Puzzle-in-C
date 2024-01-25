@@ -18,7 +18,7 @@ const int default_bias = 10;
 const int default_sleep_time = 500;
 
 void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *is_player_turn, int *variance, int *inverted, int *bias, int *sleep_time) {
-    char *puzzle_size_string = "Wondeful, you chose to play on a %ix%i board\n";
+    char *puzzle_size_string = "Wonderful, you chose to play on a %ix%i board\n";
 
     if (!advanced_setup) {
         while (*column_size <= 1) {
@@ -29,10 +29,10 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
         printf(puzzle_size_string, *column_size, *row_size);
 
         *is_player_turn = default_is_player_turn;
-        *inverted = default_inverted;
-        *variance = default_variance;
-        *bias = default_bias;
-        *sleep_time = default_sleep_time;
+        *inverted       = default_inverted;
+        *variance       = default_variance;
+        *bias           = default_bias;
+        *sleep_time     = default_sleep_time;
     } else {
         while (*column_size <= 1) {
             printf("Enter the puzzle's column size (>1): ");
@@ -66,7 +66,7 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
 int main(void) {
-    int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0, *empty_field, inverted = 0, bias = 0, sleep_time = 0, advanced_setup;
+    int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0, inverted = 0, bias = 0, sleep_time = 0, advanced_setup;
     clear_screen();
     // Set up game
     printf("Do you want a simplified (0) or advanced (1) setup? ");
@@ -75,32 +75,33 @@ int main(void) {
 
     // TODO: Allow the player to input their own initial puzzle state
     int len = column_size*row_size;
-    int *board = create_initial_board(column_size, row_size, variance);
-    empty_field = get_empty_field(column_size, board);
+    Board board = create_initial_board(column_size, row_size, variance);
+    Pos empty_field = get_empty_field(column_size, board.fields);
 
     // Show board
     clear_screen();
     printf("Here's the puzzle:\n\n");
-    show_board(column_size, row_size, board);
+    show_board(board);
 
     printf("Turn #%i\n", turn_counter);
-    printf("Priority: %i\n", get_priority(turn_counter, bias, column_size, row_size, board) - turn_counter);
+    printf("Priority: %i\n", get_priority(turn_counter, bias, board) - turn_counter);
 
 
-    while (is_player_turn && !is_solved(len, board)) {
+    while (is_player_turn && !is_solved(len, board.fields)) {
         // Get direction & play
         int direction, play_turn_return_code = -1;
         while (play_turn_return_code != SUCCESS) {
             direction = get_direction(inverted);
 
             if (direction == GETHELP) {
-                int *path = A_star(column_size, row_size, bias, empty_field, board, 1);
+                int p[2] = { empty_field.x, empty_field.y };
+                int *path = A_star(column_size, row_size, bias, p, board.fields, 1);
                 direction = path[0];
                 free(path);
             }
             else if (direction == FINISH) goto FINISH_PUZZLE;
 
-            play_turn_return_code = play_turn(direction, column_size, row_size, board, empty_field);
+            play_turn_return_code = play_turn(direction, board, &empty_field);
             switch (play_turn_return_code) {
                 case MOVE_OUTSIDE_BORDERS:
                     printf("The empty field can't be moved outside the puzzle's borders! Try again!\n");
@@ -115,16 +116,17 @@ int main(void) {
         turn_counter++;
         // Show board
         clear_screen();
-        show_board(column_size, row_size, board);
+        show_board(board);
 
         printf("Turn Counter: %i\n", turn_counter);
-        printf("Priority: %i\n", get_priority(turn_counter, bias, column_size, row_size, board) - turn_counter);
+        printf("Priority: %i\n", get_priority(turn_counter, bias, board) - turn_counter);
     }
 
     if (!is_player_turn) {
     FINISH_PUZZLE:
         printf("Processing... \n");
-        int *path = A_star(column_size, row_size, bias, empty_field, board, 1);
+        int p[2] = { empty_field.x, empty_field.y };
+        int *path = A_star(column_size, row_size, bias, p, board.fields, 1);
         printf("done!\n");
         int i = 0;
         while (path[i] != -1) {
@@ -133,23 +135,22 @@ int main(void) {
                 // printf("Press enter to continue\n");
                 // getchar();
             }
-            play_turn(path[i], column_size, row_size, board, empty_field);
+            play_turn(path[i], board, &empty_field);
             // Show board
             clear_screen();
             printf("Moved %s\n", get_direction_string(inverted ? invert_direction(path[i]) : path[i]));
-            show_board(column_size, row_size, board);
+            show_board(board);
             turn_counter++;
             i++;
         }
         printf("The computer's solution was another %i moves\n", i);
-        free(board);
+        free(board.fields);
     }
 
     printf("\nThe puzzle was solved in %i moves! \\o/\n", turn_counter);
 
     // Don't forget to free all allocated memory!
-    free(board);
-    free(empty_field);
+    free(board.fields);
 
     // test_solvable();
     return 0;

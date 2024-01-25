@@ -2,25 +2,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void move(int *pos1, int *pos2, int column_size, int *board) {
-    int posIndex = pos_to_index(pos1, column_size);
-    int emptyIndex = pos_to_index(pos2, column_size);
+void move(Pos to, Pos from, Board board) {
+    int to_idx   = pos_to_index(to,   board.cols);
+    int from_idx = pos_to_index(from, board.cols);
 
-    swap_ints(&board[posIndex], &board[emptyIndex]);
-    pos2[0] = pos1[0];
-    pos2[1] = pos1[1];
+    u8 tmp = board.fields[to_idx];
+    board.fields[to_idx] = board.fields[from_idx];
+    board.fields[from_idx] = tmp;
 }
 
-int play_turn(int direction, int column_size, int row_size, int *board, int *empty_field) {
-    int *affected_field = get_new_pos(empty_field, direction);
-    if (affected_field[0] == -1) return ILLEGAL_DIRECTION;
+int play_turn(Dir direction, Board board, Pos *empty_field) {
+    Pos affected_field = next_pos(*empty_field, direction);
+    if (affected_field.x == -1) return ILLEGAL_DIRECTION;
 
-    // printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field[0], affected_field[1], empty_field[0], empty_field[1]);
+    // printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field.x, affected_field.y, empty_field[0], empty_field[1]);
 
     // Check if turn is possible
-    if (affected_field[0] < 0 || affected_field[1] < 0 || affected_field[0] >= row_size || affected_field[1] >= column_size) return MOVE_OUTSIDE_BORDERS;
+    if (affected_field.x < 0 || affected_field.y < 0 || affected_field.x >= board.rows || affected_field.y >= board.cols) return MOVE_OUTSIDE_BORDERS;
 
-    move(affected_field, empty_field, column_size, board);
+    move(affected_field, *empty_field, board);
+    *empty_field = affected_field;
     return SUCCESS;
 }
 
