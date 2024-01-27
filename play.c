@@ -13,25 +13,25 @@ void move(Pos to, Pos from, Board board) {
 
 int play_turn(Dir direction, Board board, Pos *empty_field) {
     Pos affected_field = next_pos(*empty_field, direction);
-    if (affected_field.x == -1) return ILLEGAL_DIRECTION;
+    if (affected_field.x == UINT8_MAX) return ILLEGAL_DIRECTION;
 
     // printf("Affected Field: %i,%i - Empty Field: %i,%i\n", affected_field.x, affected_field.y, empty_field[0], empty_field[1]);
 
     // Check if turn is possible
-    if (affected_field.x < 0 || affected_field.y < 0 || affected_field.x >= board.rows || affected_field.y >= board.cols) return MOVE_OUTSIDE_BORDERS;
+    if (!is_legal_pos(affected_field, board.rows, board.cols)) return MOVE_OUTSIDE_BORDERS;
 
     move(affected_field, *empty_field, board);
     *empty_field = affected_field;
     return SUCCESS;
 }
 
-int invert_direction(int dir)
+Dir invert_direction(Dir dir)
 {
     if (dir < 5) return (~dir) & 3;
     return dir;
 }
 
-int get_direction(int inverted) {
+Dir get_direction(bool inverted) {
     char key;
     int direction;
 
@@ -58,17 +58,12 @@ GET_CHAR_LOOP:
     return direction;
 }
 
-char* get_direction_string(int direction) {
-    switch (direction) {
-    case UP:
-        return "Up";
-    case RIGHT:
-        return "Right";
-    case DOWN:
-        return "Down";
-    case LEFT:
-        return "Left";
-    default:
-        return "-";
+char* get_direction_string(Dir d) {
+    switch (d) {
+        case UP:    return "Up";
+        case RIGHT: return "Right";
+        case DOWN:  return "Down";
+        case LEFT:  return "Left";
+        default:    return "-";
     }
 }

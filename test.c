@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include "general.h"
+#include "board.c"
+#include "priority.c"
+#include "play.c"
+#include "pathfinding.c"
 
 
 void test_priority() {

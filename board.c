@@ -101,10 +101,59 @@ Pos next_pos(Pos pos, Dir dir) {
             pos.y--;
             break;
         default:
-            pos.x = -1;
-            pos.y = -1;
+            pos.x = UINT8_MAX;
+            pos.y = UINT8_MAX;
     }
     return pos;
+}
+
+// If UINT8_MAX is returned, the move was illegal
+u8 next_pos_idx(u8 pos, Dir dir, u8 rows, u8 cols) {
+    switch (dir) {
+        case UP:
+            if (pos < cols) return UINT8_MAX;
+            pos -= cols;
+            break;
+        case DOWN:
+            pos += cols;
+            if (pos >= rows*cols) return UINT8_MAX;
+            break;
+        case RIGHT:
+            pos++;
+            if (pos % cols == 0) return UINT8_MAX;
+            break;
+        case LEFT:
+            if (pos % cols == 0) return UINT8_MAX;
+            pos--;
+            break;
+        default:
+            return UINT8_MAX;
+    }
+    return pos;
+}
+
+u8 next_pos_idx_unsafe(u8 pos, Dir dir, u8 cols) {
+    switch (dir) {
+        case UP:
+            pos -= cols;
+            break;
+        case DOWN:
+            pos += cols;
+            break;
+        case RIGHT:
+            pos++;
+            break;
+        case LEFT:
+            pos--;
+            break;
+        default:
+            AIL_UNREACHABLE();
+    }
+    return pos;
+}
+
+bool is_legal_pos(Pos p, u8 rows, u8 cols) {
+    return p.x < rows && p.y < cols;
 }
 
 

@@ -1,15 +1,17 @@
-// To build, run the following command:
-// gcc main.c board.c priority.c test.c util.c play.c pathfinding.c -o main.exe
+// #define AIL_ALL_IMPL
+// #define AIL_MD_IMPL
+// #define AIL_MD_MEM_DEBUG
+// #define AIL_MD_MEM_PRINT
+// #include "ail/ail_md.h"
 
 #include "general.h"
+#include "board.c"
+#include "priority.c"
+#include "play.c"
+#include "pathfinding.c"
+#include "screen.h"
 #include <stdlib.h>
 #include <stdio.h>
-
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 
 const int default_is_player_turn = 1;
 const int default_variance = 20;
@@ -94,10 +96,9 @@ int main(void) {
             direction = get_direction(inverted);
 
             if (direction == GETHELP) {
-                int p[2] = { empty_field.x, empty_field.y };
-                int *path = A_star(column_size, row_size, bias, p, board.fields, 1);
-                direction = path[0];
-                free(path);
+                AIL_DA(Dir) path = bfs(pos_to_index(empty_field, board.cols), board);
+                direction = path.data[0];
+                ail_da_free(&path);
             }
             else if (direction == FINISH) goto FINISH_PUZZLE;
 
@@ -125,26 +126,24 @@ int main(void) {
     if (!is_player_turn) {
     FINISH_PUZZLE:
         printf("Processing... \n");
-        int p[2] = { empty_field.x, empty_field.y };
-        int *path = A_star(column_size, row_size, bias, p, board.fields, 1);
+        AIL_DA(Dir) path = bfs(pos_to_index(empty_field, board.cols), board);
         printf("done!\n");
-        int i = 0;
-        while (path[i] != -1) {
+        for (u32 i = 0; i < path.len; i++) {
             if (i) {
                 Sleep(sleep_time);
                 // printf("Press enter to continue\n");
                 // getchar();
             }
-            play_turn(path[i], board, &empty_field);
+            play_turn(path.data[i], board, &empty_field);
             // Show board
             clear_screen();
-            printf("Moved %s\n", get_direction_string(inverted ? invert_direction(path[i]) : path[i]));
+            printf("Moved %s\n", get_direction_string(inverted ? invert_direction(path.data[i]) : path.data[i]));
             show_board(board);
             turn_counter++;
-            i++;
         }
-        printf("The computer's solution was another %i moves\n", i);
-        free(board.fields);
+        printf("The computer's solution was another %d moves\n", path.len);
+
+        ail_da_free(&path);
     }
 
     printf("\nThe puzzle was solved in %i moves! \\o/\n", turn_counter);
@@ -152,6 +151,5 @@ int main(void) {
     // Don't forget to free all allocated memory!
     free(board.fields);
 
-    // test_solvable();
     return 0;
 }

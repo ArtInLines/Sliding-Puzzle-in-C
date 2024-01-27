@@ -28,7 +28,7 @@ int manhattan(int moves_amount, int bias, Board board) {
             wanted_col = (int) (board.fields[i]-1) / board.cols;
             current_row = i % board.cols;
             wanted_row = (board.fields[i]-1) % board.cols;
-            moves_amount += bias * (distance(current_col, wanted_col) + distance(current_row, wanted_row));
+            moves_amount += bias * (DIST(current_col, wanted_col) + DIST(current_row, wanted_row));
         }
     }
     return moves_amount;

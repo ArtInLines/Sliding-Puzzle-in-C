@@ -1,152 +1,162 @@
 #include "general.h"
+#define AIL_HM_IMPL
+#include "ail/ail_hm.h"
 #include <stdlib.h>
 #include <stdio.h>
 
-// The Data Fields of each item are structured in the following way:
-    // 0: previous node
-    // 1: moves amount
-    // 2: direction
-    // 3-4: empty field position
-    // 5+: board
+static u16 State_Size;
+typedef u8* Bytes;
+AIL_DA_INIT(Bytes);
+AIL_HM_INIT(Bytes, u8);
 
-int get_data_size(int len){
-    return (int) sizeof(int) * (len + 5);
-}
+typedef struct {
+    u8 *fields;
+    Dir *dirs;
+} StateEl;
+AIL_DA_INIT(StateEl);
 
-int* create_data(int len, int prev_node, int moves_amount, int dir, int *empty_field, u8 *board) {
-    int *data = malloc(get_data_size(len));
-    int i = 0;
-    data[i] = prev_node; i++;
-    data[i] = moves_amount; i++;
-    data[i] = dir; i++;
-    data[i] = empty_field[0]; i++;
-    data[i] = empty_field[1]; i++;
-    memcpy((u8 *)&data[i], board, len);
+// next_states fills an array of 4 states with the possible next states and set len to the amount of possible next states
+// A state is layed out as follows:
+// First the index of the currently empty field
+// Next the fields bytes of the board
 
-    // Debugging
-    // printf("Creating Data:\n");
-    // for (i = 0; i < len+5; i++) printf("%i. -> %i\n", i, data[i]);
-
-    return data;
-}
-
-listItem* find_by_board(listItem *root, u8 *board, int len) {
-    listItem *tmp = root;
-    if (compare_board(board, (u8 *)&(tmp->data)[5], len)) return tmp;
-    while (tmp->next!=NULL) {
-        tmp = tmp->next;
-        if (compare_board(board, (u8 *)&(tmp->data)[5], len)) return tmp;
-    }
-    return NULL;
-}
-
-int* A_star(int column_size, int row_size, int bias, int *empty_field, u8 *board, int print_progress) {
-    int i, prev_node, dir, moves_amount, turn_return, len = column_size * row_size;
-    int *data, current_empty_field[2], next_empty_field[2], directions[4] = {UP, RIGHT, DOWN, LEFT};
-    u8 *current_board;
-    Board next_board;
-
-    data = create_data(len, 0, 0, -1, empty_field, board);
-    int data_size = get_data_size(len);
-
-    listItem *node;
-    listItem *root = create_item(0, get_priority(0, bias, (Board){column_size, row_size, board}), data, data_size);
-    listItem *used_stack = create_item(0, 0, data, data_size);
-
-    // printf("A* before while loop\n");
-
-    while (1) {
-        i = 0;
-        data = root->data;
-        prev_node = data[i]; i++;
-        moves_amount = data[i]; i++;
-        dir = data[i]; i++;
-        current_empty_field[0] = data[i]; i++;
-        current_empty_field[1] = data[i]; i++;
-        current_board = (u8 *)&(data[i]);
-        (void)dir;
-
-        // Add new nodes for each direction (skipping illegal directions)
-        for (i = 0; i < 4; i++) {
-            if ((root->data)[2] == invert_direction(directions[i])) continue;
-
-            next_board       = copy_board((Board) {column_size, row_size, current_board});
-            Pos next_empty_pos = {current_empty_field[0], current_empty_field[1]};
-            turn_return      = play_turn(directions[i], next_board, &next_empty_pos);
-            next_empty_field[0] = next_empty_pos.x;
-            next_empty_field[1] = next_empty_pos.y;
-
-            if (turn_return != SUCCESS) continue;
-
-            // printf("\nMove %i: \n", directions[i]);
-            // show_board(column_size, row_size, next_board);
-
-            // printf("\nDirection: %i\n", directions[i]);
-            // printf("next_board[4]: %i\n", next_board[4]);
-
-            data = create_data(len, root->id, moves_amount+1, directions[i], next_empty_field, next_board.fields);
-            // board_id = create_board_id(next_board, len);
-            node = create_item(0, get_priority(moves_amount+1, bias, next_board), data, data_size);
-            // print_list_item(node);
-            // print_list_item_data(node);
-
-            if (find_by_board(used_stack, next_board.fields, len) != NULL) continue;
-
-            // printf("New Node: "); print_list_item(node);
-            // printf("Root: "); print_list_item(root);
-
-            insert_sorted(root, node, 1);
-
-            // printf("Complete List:\n");
-            // print_list(root);
+// [in]  state should hold the bytes for the current state
+// [out] next should hold enough space for 4*(rows*cols + 1)) bytes
+// [out] dirs should hold enough space for 4 Dirs. It is a parallel array to next
+// [out] len stores the amount of states that were actually added
+static inline void next_states(const u8 *restrict state, u8 *restrict next, Dir *restrict dirs, u8 *restrict len, u8 rows, u8 cols) {
+    u16 board_size = rows*cols;
+    u16 state_size = 1 + board_size;
+    u8  pos = state[0];
+    u16 j = 0;
+    for (u8 i = 0; i < 4; i++) {
+        u8 np = next_pos_idx(pos, (Dir)i, rows, cols);
+        if (np != UINT8_MAX) {
+            dirs[j] = (Dir)i;
+            u8 *const ns = &next[j * state_size];
+            memcpy(&ns[1], &state[1], board_size);
+            ns[0] = np;
+            u8 tmp = ns[1 + np];
+            ns[1 + np]  = ns[1 + pos];
+            ns[1 + pos] = tmp;
+            j++;
         }
-        // printf("Stack:\n");
-        // print_list(root);
-        // printf("Used Stack:\n");
-        // print_list(used_stack);
-
-        insert(used_stack, copy_item(root, 1));
-        root = shift(root);
-
-        if (print_progress) {
-            printf("\rStack Height: %i   -   Used Stack Height: %i   -   Best Priority: %i   -   Root ID: %i   -   Turn Counter: %i  ", get_list_len(root), get_list_len(used_stack), root->weight, root->id, (root->data)[1]);
-        }
-
-        // printf("\n\n\n");
-        // show_board(column_size, row_size, &(root->data)[5]);
-        // printf("Current root: "); print_list_item(root);
-        // printf("Stack:\n"); print_list(root);
-        // printf("\nUsed Stack:\n"); print_list(used_stack);
-
-        // printf("Looked at %i possible moves\n", get_list_len(used_stack));
-
-        if (is_solved(len, (u8 *)&(root->data)[5])) break;
     }
+    *len = j;
+}
 
-    // show_board(column_size, row_size, &(root->data)[5]);
+// No error checking is done in this function
+static inline void play_turns(u8 *fields, u8 empty_idx, u8 cols, AIL_DA(Dir) dirs) {
+    u8 ci = empty_idx;
+    u8 ni;
+    for (u32 i = 0; i < dirs.len; i++) {
+        Dir d = dirs.data[i];
+        ni = next_pos_idx_unsafe(ci, d, cols);
+        u8 tmp = fields[ci];
+        fields[ci] = fields[ni];
+        fields[ni] = tmp;
+        ci = ni;
+    }
+}
 
-    // printf("A* before path creation: moves_amount=%i\n", moves_amount+2);
-    int *path = malloc((moves_amount+2) * sizeof(int));
-    path[moves_amount+1] = -1;
-    do {
-        moves_amount = (root->data)[1];
-        path[moves_amount-1] = (root->data)[2];
-        prev_node = (root->data)[0];
-        root = find_by_id(prev_node, used_stack);
-        // printf("i: %i -> path[i]: %i | moves_amount: %i\n", moves_amount-1, path[moves_amount-1], moves_amount);
-    } while((root->data)[1]);
+// Uses djb2 for now
+// @TODO: Test if this is actually a good hash for our data
+u32 fields_hash(Bytes fields) {
+    u32 h = 5381;
+    for (u16 i = 0; i < State_Size; i++) {
+        h = ((h << 5) + h) + fields[i];
+    }
+    return h;
+}
 
+bool fields_eq(Bytes a, Bytes b) {
+    for (u16 i = 0; i < State_Size; i++) {
+        if (a[i] != b[i]) return false;
+    }
+    return true;
+}
+
+// @TODO: Use custom allocator
+AIL_DA(Dir) bfs(u8 empty_pos, Board board) {
+    State_Size = board.rows*board.cols + 1;
+    AIL_HM(Bytes, u8) visited = ail_hm_with_cap(Bytes, u8, 512*State_Size, &fields_hash, &fields_eq);
+    AIL_DA(u8) visited_backlog = ail_da_new(u8);
+    AIL_DA(StateEl) cstates = ail_da_new(StateEl);
+    AIL_DA(StateEl) nstates = ail_da_new(StateEl);
+    AIL_DA(Dir) path = ail_da_new(Dir);
+
+    u8 *start = malloc(State_Size);
+    start[0] = empty_pos;
+    memcpy(&start[1], board.fields, board.rows*board.cols);
+    ail_da_push(&cstates, ((StateEl){start, NULL}));
+
+    u32 depth = 0;
+    u8 next_amount;
+    u8 *next = malloc(4*State_Size);
+    Dir dirs[4];
+    while (cstates.len) {
+        for (u32 i = 0; i < cstates.len; i++) {
+            StateEl state = cstates.data[i];
+
+            // printf("\n\n");
+            // printf("Current State: ( ");
+            // for (u32 i = 0; i < depth; i++) printf("%s ", get_direction_string(state.dirs[i]));
+            // printf(")\n");
+            // show_board((Board){ board.rows, board.cols, &state.fields[1] });
+
+            next_states(state.fields, next, dirs, &next_amount, board.rows, board.cols);
+            for (u8 j = 0; j < next_amount; j++) {
+                // printf("Next State: (%s)\n", get_direction_string(dirs[j]));
+                // show_board((Board) { board.rows, board.cols, &next[j*State_Size + 1] });
+
+                u32 idx;
+                bool found;
+                ail_hm_get_idx(&visited, &next[j*State_Size], idx, found);
+                (void)idx;
+                if (!found) {
+                    if (is_solved(board.rows*board.cols, &next[j*State_Size + 1])) {
+                        ail_da_pushn(&path, state.dirs, depth);
+                        ail_da_push(&path, dirs[j]);
+                        goto end;
+                    }
+
+                    u8 *ptr = malloc(State_Size + sizeof(Dir)*(depth + 1));
+                    StateEl ns = {
+                        .fields = ptr,
+                        .dirs   = (Dir *)&ptr[State_Size],
+                    };
+                    memcpy(ns.fields, &next[j*State_Size], State_Size);
+                    for (u32 k = 0; k < depth; k++) ns.dirs[k] = state.dirs[k]; // @Note: Memcpy didn't work here for some reason
+                    ns.dirs[depth] = dirs[j];
+                    ail_da_push(&nstates, ns);
+                    u32 backlog_idx = visited_backlog.len;
+                    ail_da_pushn(&visited_backlog, &next[j*State_Size], State_Size);
+                    ail_hm_put(&visited, &visited_backlog.data[backlog_idx], 1);
+                }
+            }
+            if (state.fields) free(state.fields);
+
+        }
+        cstates.len = 0;
+        AIL_DA(StateEl) tmp = cstates;
+        cstates = nstates;
+        nstates = tmp;
+        depth++;
+    }
+    ail_da_free(&path);
+end:
+    ail_da_free(&cstates);
+    ail_da_free(&nstates);
+    ail_hm_free(&visited);
+    ail_da_free(&visited_backlog);
+    free(next);
+
+    // printf("\n\n");
+    // printf("Start:\n");
+    // show_board(board);
+    // printf("Path of %d moves:\n", path.len);
+    // for (u32 i = 0; i < path.len; i++)
+    //     printf("  %s\n", get_direction_string(path.data[i]));
+    // AIL_DBG_EXIT();
     return path;
-}
-
-int* A_star_mem_efficient(int column_size, int row_size, int *empty_field, u8 *board) {
-    (void)column_size;
-    (void)row_size;
-    (void)empty_field;
-    (void)board;
-    return NULL;
-    // A* but without storing a new board_copy for each node
-    // instead only the direction for that node is stored
-    // (as well as the parent node)
-    // with the actual board being created on the fly from the og board.
 }

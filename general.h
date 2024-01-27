@@ -1,14 +1,14 @@
 #ifndef GENERAL_H_
 #define GENERAL_H_
 
-#define AIL_TYPES_IMPL
+#define AIL_ALL_IMPL
 #include "ail/ail.h"
+#include "ail/ail_alloc.h"
 #include <stdbool.h>
 
 // Enums & Structs
-
 typedef struct Pos {
-    i8 x, y;
+    u8 x, y;
 } Pos;
 
 typedef struct Board {
@@ -26,7 +26,8 @@ struct list_el {
     };
 typedef struct list_el listItem;
 
-typedef enum Dir {
+AIL_PACK_BEGIN()
+enum Dir {
     UP      = 0, // 00
     DOWN    = 3, // 11
     RIGHT   = 1, // 01
@@ -34,7 +35,10 @@ typedef enum Dir {
     GETHELP = 5,
     FINISH  = 6,
     ERROR   = 7,
-} Dir;
+};
+AIL_PACK_END()
+typedef enum Dir Dir;
+AIL_DA_INIT(Dir);
 
 typedef enum TurnResult {
     SUCCESS,
@@ -42,40 +46,30 @@ typedef enum TurnResult {
     ILLEGAL_DIRECTION
 } TurnResult;
 
+// Utilities:
+#define DIST(x, y) ((x) < (y))*((y) - (x)) + ((x) >= (y))*((x) - (y))
+
+static inline Pos index_to_pos(u8 idx, u8 cols) {
+    return (Pos) {
+        idx / cols,
+        idx % cols
+    };
+}
+
+static inline u8 pos_to_index(Pos pos, u8 cols) {
+    return pos.x*cols + pos.y;
+}
 
 // Play:
 int play_turn(Dir direction, Board board, Pos *empty_field);
 void move(Pos to, Pos from, Board board);
-int get_direction(int inverted);
-int invert_direction(int dir);
-char* get_direction_string(int direction);
+Dir get_direction(bool inverted);
+Dir invert_direction(Dir dir);
+char* get_direction_string(Dir d);
 
 
 // Pathfinding:
-int* A_star(int column_size, int row_size, int bias, int *empty_field, u8 *board, int print_progress);
-int* A_star_mem_efficient(int column_size, int row_size, int *empty_field, u8 *board);
-
-
-// Utilities:
-int distance(int x, int y);
-Pos index_to_pos(int index, int column_size);
-int pos_to_index(Pos pos, int column_size);
-void clear_screen();
-int next_id();
-int rand_int();
-void print_list(listItem *root);
-void print_list_item(listItem *item);
-void print_list_item_data(listItem *item);
-listItem* insert_sorted(listItem *root, listItem *new_el, int skip_root);
-listItem* sort(listItem *root);
-void remove_item(listItem *el);
-listItem* shift(listItem *root);
-listItem* insert(listItem *last_item, listItem *new_el);
-listItem* create_item(int id, int weight, void *data, int size);
-listItem* copy_item(listItem *item, int keep_id);
-listItem* find_by_id(int id, listItem *root);
-listItem* find_by_data(listItem *root, int (*f) (int*));
-int get_list_len(listItem *root);
+AIL_DA(Dir) bfs(u8 empty_pos, Board board);
 
 
 // Board:
@@ -86,8 +80,11 @@ Board create_initial_board(int cols, int rows, int variance);
 Board copy_board(Board board);
 void show_board(Board board);
 Pos next_pos(Pos pos, Dir dir);
+u8 next_pos_idx(u8 pos, Dir dir, u8 rows, u8 cols);
+u8 next_pos_idx_unsafe(u8 pos, Dir dir, u8 cols);
 int compare_board(u8 *board1, u8 *board2, int len);
 Pos get_empty_field(int column_size, u8 *board);
+bool is_legal_pos(Pos p, u8 rows, u8 cols);
 
 
 // Priorities / Heuristics:
