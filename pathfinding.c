@@ -12,8 +12,15 @@ AIL_HM_INIT(Bytes, u8);
 typedef struct {
     u8 *fields;
     Dir *dirs;
-} StateEl;
-AIL_DA_INIT(StateEl);
+} BFSStateEl;
+AIL_DA_INIT(BFSStateEl);
+
+typedef struct {
+    u8 *fields;
+    u32 depth;
+    Dir dir;
+} DFSStateEl;
+AIL_DA_INIT(DFSStateEl);
 
 // next_states fills an array of 4 states with the possible next states and set len to the amount of possible next states
 // A state is layed out as follows:
@@ -76,52 +83,99 @@ bool fields_eq(Bytes a, Bytes b) {
     return true;
 }
 
-// @TODO: Use custom allocator
-AIL_DA(Dir) bfs(u8 empty_pos, Board board) {
-    State_Size = board.rows*board.cols + 1;
-    AIL_HM(Bytes, u8) visited = ail_hm_with_cap(Bytes, u8, 512*State_Size, &fields_hash, &fields_eq);
-    AIL_DA(u8) visited_backlog = ail_da_new(u8);
-    AIL_DA(StateEl) cstates = ail_da_new(StateEl);
-    AIL_DA(StateEl) nstates = ail_da_new(StateEl);
-    AIL_DA(Dir) path = ail_da_new(Dir);
+#define SET_STATE_SIZE(board) State_Size = (board).rows*(board).cols + 1
 
-    u8 *start = malloc(State_Size);
+AIL_DA(Dir) dfs(u8 empty_pos, Board board, AIL_Allocator *allocator) {
+    SET_STATE_SIZE(board);
+    AIL_DA(Dir) path           = ail_da_new_with_alloc(Dir, AIL_DA_INIT_CAP, allocator);
+    AIL_HM(Bytes, u8) visited  = ail_hm_new_with_alloc(Bytes, u8, 1024*State_Size, &fields_hash, &fields_eq, allocator);
+    AIL_DA(u8) visited_backlog = ail_da_new_with_alloc(u8, AIL_DA_INIT_CAP, allocator);
+    AIL_DA(DFSStateEl) stack   = ail_da_new_with_alloc(DFSStateEl, AIL_DA_INIT_CAP, allocator);
+
+    u8 *start = allocator->alloc(allocator->data, State_Size);
     start[0] = empty_pos;
     memcpy(&start[1], board.fields, board.rows*board.cols);
-    ail_da_push(&cstates, ((StateEl){start, NULL}));
+    DFSStateEl start_el = { .depth = UINT32_MAX, .fields = start };
+    ail_da_push(&stack, start_el);
+
+    while (stack.len) {
+        u8 *next = allocator->alloc(allocator->data, 4*State_Size);
+        Dir dirs[4];
+        u8 amount;
+        DFSStateEl state = stack.data[--stack.len];
+        if (AIL_LIKELY(state.depth != UINT32_MAX)) {
+            path.len = state.depth;
+            ail_da_push(&path, state.dir);
+        }
+        next_states(state.fields, next, dirs, &amount, board.rows, board.cols);
+        for (u8 i = 0; i < amount; i++) {
+            u32 idx; AIL_UNUSED(idx);
+            bool found;
+            ail_hm_get_idx(&visited, &next[i*State_Size], idx, found);
+            if (!found) {
+                if (is_solved(board.rows*board.cols, &next[i*State_Size + 1])) {
+                    ail_da_push(&path, dirs[i]);
+                    goto done;
+                }
+
+                u32 backlog_idx = visited_backlog.len;
+                ail_da_pushn(&visited_backlog, &next[i*State_Size], State_Size);
+                ail_hm_put(&visited, &visited_backlog.data[backlog_idx], 1);
+
+                DFSStateEl ns = {
+                    .depth  = path.len,
+                    .dir    = dirs[i],
+                    .fields = &visited_backlog.data[backlog_idx],
+                };
+                ail_da_push(&stack, ns);
+            }
+        }
+        allocator->free_one(allocator->data, next);
+    }
+
+done:
+    ail_hm_free(&visited);
+    ail_da_free(&visited_backlog);
+    ail_da_free(&stack);
+    allocator->free_one(allocator->data, start);
+    return path;
+}
+
+// @TODO: Use custom allocator
+AIL_DA(Dir) bfs(u8 empty_pos, Board board, AIL_Allocator *allocator) {
+    SET_STATE_SIZE(board);
+    AIL_HM(Bytes, u8) visited  = ail_hm_new_with_alloc(Bytes, u8, 512*State_Size, &fields_hash, &fields_eq, allocator);
+    AIL_DA(u8) visited_backlog = ail_da_new_with_alloc(u8,         AIL_DA_INIT_CAP, allocator);
+    AIL_DA(BFSStateEl) cstates = ail_da_new_with_alloc(BFSStateEl, AIL_DA_INIT_CAP, allocator);
+    AIL_DA(BFSStateEl) nstates = ail_da_new_with_alloc(BFSStateEl, AIL_DA_INIT_CAP, allocator);
+    AIL_DA(Dir)        path    = ail_da_new_with_alloc(Dir,        AIL_DA_INIT_CAP, allocator);
+
+    u8 *start = allocator->alloc(allocator->data, State_Size);
+    start[0] = empty_pos;
+    memcpy(&start[1], board.fields, board.rows*board.cols);
+    ail_da_push(&cstates, ((BFSStateEl){start, NULL}));
 
     u32 depth = 0;
     u8 next_amount;
-    u8 *next = malloc(4*State_Size);
+    u8 *next = allocator->alloc(allocator->data, 4*State_Size);
     Dir dirs[4];
     while (cstates.len) {
         for (u32 i = 0; i < cstates.len; i++) {
-            StateEl state = cstates.data[i];
-
-            // printf("\n\n");
-            // printf("Current State: ( ");
-            // for (u32 i = 0; i < depth; i++) printf("%s ", get_direction_string(state.dirs[i]));
-            // printf(")\n");
-            // show_board((Board){ board.rows, board.cols, &state.fields[1] });
-
+            BFSStateEl state = cstates.data[i];
             next_states(state.fields, next, dirs, &next_amount, board.rows, board.cols);
             for (u8 j = 0; j < next_amount; j++) {
-                // printf("Next State: (%s)\n", get_direction_string(dirs[j]));
-                // show_board((Board) { board.rows, board.cols, &next[j*State_Size + 1] });
-
-                u32 idx;
+                u32 idx; AIL_UNUSED(idx);
                 bool found;
                 ail_hm_get_idx(&visited, &next[j*State_Size], idx, found);
-                (void)idx;
                 if (!found) {
                     if (is_solved(board.rows*board.cols, &next[j*State_Size + 1])) {
                         ail_da_pushn(&path, state.dirs, depth);
                         ail_da_push(&path, dirs[j]);
-                        goto end;
+                        goto done;
                     }
 
-                    u8 *ptr = malloc(State_Size + sizeof(Dir)*(depth + 1));
-                    StateEl ns = {
+                    u8 *ptr = allocator->alloc(allocator->data, State_Size + sizeof(Dir)*(depth + 1));
+                    BFSStateEl ns = {
                         .fields = ptr,
                         .dirs   = (Dir *)&ptr[State_Size],
                     };
@@ -134,29 +188,21 @@ AIL_DA(Dir) bfs(u8 empty_pos, Board board) {
                     ail_hm_put(&visited, &visited_backlog.data[backlog_idx], 1);
                 }
             }
-            if (state.fields) free(state.fields);
+            if (state.fields) allocator->free_one(allocator->data, state.fields);
 
         }
         cstates.len = 0;
-        AIL_DA(StateEl) tmp = cstates;
+        AIL_DA(BFSStateEl) tmp = cstates;
         cstates = nstates;
         nstates = tmp;
         depth++;
     }
     ail_da_free(&path);
-end:
+done:
     ail_da_free(&cstates);
     ail_da_free(&nstates);
     ail_hm_free(&visited);
     ail_da_free(&visited_backlog);
-    free(next);
-
-    // printf("\n\n");
-    // printf("Start:\n");
-    // show_board(board);
-    // printf("Path of %d moves:\n", path.len);
-    // for (u32 i = 0; i < path.len; i++)
-    //     printf("  %s\n", get_direction_string(path.data[i]));
-    // AIL_DBG_EXIT();
+    allocator->free_one(allocator->data, next);
     return path;
 }

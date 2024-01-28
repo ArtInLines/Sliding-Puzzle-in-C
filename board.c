@@ -11,22 +11,22 @@ bool is_solved(int len, u8 *board) {
     return true;
 }
 
-bool is_solvable(Board board) {
-    if (solvable_helper(board) % 2) return false; // For odd amounts of transpositions, the puzzle is not solvable
+bool is_solvable(Board board, AIL_Allocator *allocator) {
+    if (solvable_helper(board, allocator) % 2) return false; // For odd amounts of transpositions, the puzzle is not solvable
     else return true; // For even amounts of transpositions, the puzzle is solvable
     // See ./literature for mathematical proves of this fact!
 }
 
-int solvable_helper(Board board) {
+int solvable_helper(Board board, AIL_Allocator *allocator) {
     int i, transpositions_amount = 0, len = board.cols * board.rows;
     // Create copy of board where empty field is equal to the highest numbr (since it should be at the end of the board)
     Pos empty_field;
-    u8 *fields_copy = malloc(len * sizeof(u8));
+    u8 *fields_copy = allocator->alloc(allocator->data, len * sizeof(u8));
     for (i = 0; i < len; i++) {
         fields_copy[i] = board.fields[i];
         if (!fields_copy[i]) empty_field = index_to_pos(i, board.cols);
     }
-    Board board_copy = copy_board(board);
+    Board board_copy = copy_board(board, allocator);
     // Move the empty field to the last position with legal moves, so it can be ignored
     while (empty_field.x < board.rows-1) play_turn(DOWN, board_copy, &empty_field);
     while (empty_field.y < board.cols-1) play_turn(RIGHT, board_copy, &empty_field);
@@ -45,7 +45,7 @@ int solvable_helper(Board board) {
     }
 
 
-    free(board_copy.fields);
+    allocator->free_one(allocator->data, board_copy.fields);
     return transpositions_amount;
 }
 
@@ -55,9 +55,9 @@ Pos get_empty_field(int column_size, u8 *board) {
     return index_to_pos(i, column_size);
 }
 
-Board create_initial_board(int cols, int rows, int variance) {
+Board create_initial_board(int cols, int rows, int variance, AIL_Allocator *allocator) {
     int len = cols * rows, i, r, empty_field = len - 1;
-    Board board = { rows, cols, malloc(len * sizeof(int)) };
+    Board board = { rows, cols, allocator->alloc(allocator->data, len * sizeof(int)) };
 
     // maybe do some more interesting calculation here someday:
     int swap_amount = variance;
@@ -66,7 +66,7 @@ Board create_initial_board(int cols, int rows, int variance) {
     srand(time(NULL)); // init rand()
     for (i = 0; i < len; i++) board.fields[i] = i+1;
     board.fields[empty_field] = 0;
-    for (i = 0; i < swap_amount || !is_solvable(board) || is_solved(len, board.fields); i++) {
+    for (i = 0; i < swap_amount || !is_solvable(board, allocator) || is_solved(len, board.fields); i++) {
         do { r = rand() % len; } while (r == empty_field);
         AIL_SWAP(board.fields[empty_field], board.fields[r]);
         empty_field = r;
@@ -75,9 +75,9 @@ Board create_initial_board(int cols, int rows, int variance) {
     return board;
 }
 
-Board copy_board(Board board) {
+Board copy_board(Board board, AIL_Allocator *allocator) {
     u16 len = board.rows * board.cols;
-    u8 *fields = malloc(len * sizeof(u8));
+    u8 *fields = allocator->alloc(allocator->data, len * sizeof(u8));
     for (u16 i = 0; i < len; i++) fields[i] = board.fields[i];
     return (Board) {
         board.rows,

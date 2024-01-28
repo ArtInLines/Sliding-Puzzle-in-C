@@ -46,6 +46,8 @@ typedef enum TurnResult {
     ILLEGAL_DIRECTION
 } TurnResult;
 
+typedef AIL_DA(Dir) (search_t)(u8 empty_pos, Board board, AIL_Allocator *allocator);
+
 // Utilities:
 #define DIST(x, y) ((x) < (y))*((y) - (x)) + ((x) >= (y))*((x) - (y))
 
@@ -69,15 +71,16 @@ char* get_direction_string(Dir d);
 
 
 // Pathfinding:
-AIL_DA(Dir) bfs(u8 empty_pos, Board board);
+search_t bfs;
+search_t dfs;
 
 
 // Board:
 bool is_solved(int len, u8 *board);
-bool is_solvable(Board board);
-int solvable_helper(Board board);
-Board create_initial_board(int cols, int rows, int variance);
-Board copy_board(Board board);
+bool is_solvable(Board board, AIL_Allocator *allocator);
+int solvable_helper(Board board, AIL_Allocator *allocator);
+Board create_initial_board(int cols, int rows, int variance, AIL_Allocator *allocator);
+Board copy_board(Board board, AIL_Allocator *allocator);
 void show_board(Board board);
 Pos next_pos(Pos pos, Dir dir);
 u8 next_pos_idx(u8 pos, Dir dir, u8 rows, u8 cols);

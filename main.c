@@ -1,4 +1,5 @@
-// #define AIL_ALL_IMPL
+// #define AIL_ALLOC_PRINT_MEM
+#define AIL_ALL_IMPL
 // #define AIL_MD_IMPL
 // #define AIL_MD_MEM_DEBUG
 // #define AIL_MD_MEM_PRINT
@@ -18,8 +19,9 @@ const int default_variance = 20;
 const int default_inverted = 0;
 const int default_bias = 10;
 const int default_sleep_time = 500;
+search_t *const default_search = &bfs;
 
-void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *is_player_turn, int *variance, int *inverted, int *bias, int *sleep_time) {
+void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *is_player_turn, int *variance, int *inverted, int *bias, int *sleep_time, search_t **search) {
     char *puzzle_size_string = "Wonderful, you chose to play on a %ix%i board\n";
 
     if (!advanced_setup) {
@@ -35,7 +37,9 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
         *variance       = default_variance;
         *bias           = default_bias;
         *sleep_time     = default_sleep_time;
+        *search         = default_search;
     } else {
+        // @TODO: Add ability to just press enter and thus use the default setting
         while (*column_size <= 1) {
             printf("Enter the puzzle's column size (>1): ");
             scanf("%d", column_size);
@@ -50,12 +54,24 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
             printf("Enter the initial game board's variance (>0): ");
             scanf("%d", variance);
         }
+        printf("Do you want the movements to be inverted (1) or not (0)? ");
+        scanf("%d", inverted);
+
+        bool valid_algo = false;
+        char algo[128] = {0};
+        while (!valid_algo) {
+            printf("What algorithm do you want the computer to use (dfs, bfs)? ");
+            scanf("%s", algo);
+            valid_algo = true;
+            if      (strcmp(algo, "dfs") == 0) *search = &dfs;
+            else if (strcmp(algo, "bfs")     == 0) *search = &bfs;
+            else valid_algo = false;
+        }
+
         while (*bias <= 0) {
             printf("What should the bias for calculating the priority be? ");
             scanf("%d", bias);
         }
-        printf("Do you want the movements to be inverted (1) or not (0)? ");
-        scanf("%d", inverted);
 
         printf("How many miliseconds should the computer wait between each move? ");
         scanf("%d", sleep_time);
@@ -68,16 +84,18 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
 int main(void) {
+    AIL_Allocator allocator = ail_alloc_std;
+    search_t *search;
     int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0, inverted = 0, bias = 0, sleep_time = 0, advanced_setup;
     clear_screen();
     // Set up game
     printf("Do you want a simplified (0) or advanced (1) setup? ");
     scanf("%d", &advanced_setup);
-    get_setup_values(advanced_setup, &column_size, &row_size, &is_player_turn, &variance, &inverted, &bias, &sleep_time);
+    get_setup_values(advanced_setup, &column_size, &row_size, &is_player_turn, &variance, &inverted, &bias, &sleep_time, &search);
 
     // TODO: Allow the player to input their own initial puzzle state
     int len = column_size*row_size;
-    Board board = create_initial_board(column_size, row_size, variance);
+    Board board = create_initial_board(column_size, row_size, variance, &allocator);
     Pos empty_field = get_empty_field(column_size, board.fields);
 
     // Show board
@@ -96,7 +114,7 @@ int main(void) {
             direction = get_direction(inverted);
 
             if (direction == GETHELP) {
-                AIL_DA(Dir) path = bfs(pos_to_index(empty_field, board.cols), board);
+                AIL_DA(Dir) path = search(pos_to_index(empty_field, board.cols), board, &allocator);
                 direction = path.data[0];
                 ail_da_free(&path);
             }
@@ -126,7 +144,7 @@ int main(void) {
     if (!is_player_turn) {
     FINISH_PUZZLE:
         printf("Processing... \n");
-        AIL_DA(Dir) path = bfs(pos_to_index(empty_field, board.cols), board);
+        AIL_DA(Dir) path = search(pos_to_index(empty_field, board.cols), board, &allocator);
         printf("done!\n");
         for (u32 i = 0; i < path.len; i++) {
             if (i) {
@@ -149,7 +167,7 @@ int main(void) {
     printf("\nThe puzzle was solved in %i moves! \\o/\n", turn_counter);
 
     // Don't forget to free all allocated memory!
-    free(board.fields);
+    allocator.free_one(allocator.data, board.fields);
 
     return 0;
 }
