@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define BUFFER_SIZE 1024
+
 const int default_is_player_turn = 1;
 const int default_variance = 20;
 const int default_inverted = 0;
@@ -84,7 +86,8 @@ void get_setup_values(int advanced_setup, int *column_size, int *row_size, int *
 // Main Function
 // Takes cli arguments, parses them & calls apropriate function
 int main(void) {
-    AIL_Allocator allocator = ail_alloc_std;
+    u8 buffer[BUFFER_SIZE] = {0};
+    AIL_Allocator buffer_allocator = ail_alloc_buffer_new(BUFFER_SIZE, buffer);
     search_t *search;
     int column_size = 0, row_size = 0, is_player_turn = 1, turn_counter = 0, variance = 0, inverted = 0, bias = 0, sleep_time = 0, advanced_setup;
     clear_screen();
@@ -95,7 +98,7 @@ int main(void) {
 
     // TODO: Allow the player to input their own initial puzzle state
     int len = column_size*row_size;
-    Board board = create_initial_board(column_size, row_size, variance, &allocator);
+    Board board = create_initial_board(column_size, row_size, variance, &buffer_allocator);
     Pos empty_field = get_empty_field(column_size, board.fields);
 
     // Show board
@@ -113,12 +116,12 @@ int main(void) {
         while (play_turn_return_code != SUCCESS) {
             direction = get_direction(inverted);
 
-            if (direction == GETHELP) {
-                AIL_DA(Dir) path = search(pos_to_index(empty_field, board.cols), board, &allocator);
+            if (direction == DIR_GETHELP) {
+                AIL_DA(Dir) path = search(pos_to_index(empty_field, board.cols), board, &buffer_allocator);
                 direction = path.data[0];
                 ail_da_free(&path);
             }
-            else if (direction == FINISH) goto FINISH_PUZZLE;
+            else if (direction == DIR_FINISH) goto FINISH_PUZZLE;
 
             play_turn_return_code = play_turn(direction, board, &empty_field);
             switch (play_turn_return_code) {
@@ -144,7 +147,7 @@ int main(void) {
     if (!is_player_turn) {
     FINISH_PUZZLE:
         printf("Processing... \n");
-        AIL_DA(Dir) path = search(pos_to_index(empty_field, board.cols), board, &allocator);
+        AIL_DA(Dir) path = search(pos_to_index(empty_field, board.cols), board, &buffer_allocator);
         printf("done!\n");
         for (u32 i = 0; i < path.len; i++) {
             if (i) {
@@ -167,7 +170,7 @@ int main(void) {
     printf("\nThe puzzle was solved in %i moves! \\o/\n", turn_counter);
 
     // Don't forget to free all allocated memory!
-    allocator.free_one(allocator.data, board.fields);
+    buffer_allocator.free_one(buffer_allocator.data, board.fields);
 
     return 0;
 }

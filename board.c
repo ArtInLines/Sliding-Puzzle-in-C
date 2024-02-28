@@ -28,8 +28,8 @@ int solvable_helper(Board board, AIL_Allocator *allocator) {
     }
     Board board_copy = copy_board(board, allocator);
     // Move the empty field to the last position with legal moves, so it can be ignored
-    while (empty_field.x < board.rows-1) play_turn(DOWN, board_copy, &empty_field);
-    while (empty_field.y < board.cols-1) play_turn(RIGHT, board_copy, &empty_field);
+    while (empty_field.x < board.rows-1) play_turn(DIR_DOWN, board_copy, &empty_field);
+    while (empty_field.y < board.cols-1) play_turn(DIR_RIGHT, board_copy, &empty_field);
 
     // Loop through copied board (while ignoring empty field at last position)
     // When reaching an element out of order:
@@ -88,16 +88,16 @@ Board copy_board(Board board, AIL_Allocator *allocator) {
 
 Pos next_pos(Pos pos, Dir dir) {
     switch (dir) {
-        case UP:
+        case DIR_UP:
             pos.x--;
             break;
-        case DOWN:
+        case DIR_DOWN:
             pos.x++;
             break;
-        case RIGHT:
+        case DIR_RIGHT:
             pos.y++;
             break;
-        case LEFT:
+        case DIR_LEFT:
             pos.y--;
             break;
         default:
@@ -110,19 +110,19 @@ Pos next_pos(Pos pos, Dir dir) {
 // If UINT8_MAX is returned, the move was illegal
 u8 next_pos_idx(u8 pos, Dir dir, u8 rows, u8 cols) {
     switch (dir) {
-        case UP:
+        case DIR_UP:
             if (pos < cols) return UINT8_MAX;
             pos -= cols;
             break;
-        case DOWN:
+        case DIR_DOWN:
             pos += cols;
             if (pos >= rows*cols) return UINT8_MAX;
             break;
-        case RIGHT:
+        case DIR_RIGHT:
             pos++;
             if (pos % cols == 0) return UINT8_MAX;
             break;
-        case LEFT:
+        case DIR_LEFT:
             if (pos % cols == 0) return UINT8_MAX;
             pos--;
             break;
@@ -134,16 +134,16 @@ u8 next_pos_idx(u8 pos, Dir dir, u8 rows, u8 cols) {
 
 u8 next_pos_idx_unsafe(u8 pos, Dir dir, u8 cols) {
     switch (dir) {
-        case UP:
+        case DIR_UP:
             pos -= cols;
             break;
-        case DOWN:
+        case DIR_DOWN:
             pos += cols;
             break;
-        case RIGHT:
+        case DIR_RIGHT:
             pos++;
             break;
-        case LEFT:
+        case DIR_LEFT:
             pos--;
             break;
         default:

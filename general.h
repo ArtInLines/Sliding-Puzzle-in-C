@@ -28,13 +28,13 @@ typedef struct list_el listItem;
 
 AIL_PACK_BEGIN()
 enum Dir {
-    UP      = 0, // 00
-    DOWN    = 3, // 11
-    RIGHT   = 1, // 01
-    LEFT    = 2, // 10
-    GETHELP = 5,
-    FINISH  = 6,
-    ERROR   = 7,
+    DIR_UP      = 0, // 00
+    DIR_DOWN    = 3, // 11
+    DIR_RIGHT   = 1, // 01
+    DIR_LEFT    = 2, // 10
+    DIR_GETHELP = 5,
+    DIR_FINISH  = 6,
+    DIR_ERROR   = 7,
 };
 AIL_PACK_END()
 typedef enum Dir Dir;

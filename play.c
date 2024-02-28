@@ -42,16 +42,16 @@ GET_CHAR_LOOP:
     printf("Make a move using w-a-s-d:  ");
     getchar(); // I don't exactly know why this is needed tbh xd
     key = getchar();
-    if      (key == 'w' || key == 'W') direction = UP;
-    else if (key == 'a' || key == 'A') direction = LEFT;
-    else if (key == 's' || key == 'S') direction = DOWN;
-    else if (key == 'd' || key == 'D') direction = RIGHT;
-    else if (key == 'e' || key == 'E') direction = GETHELP;
-    else if (key == 'q' || key == 'Q') direction = FINISH;
-    else direction = ERROR;
+    if      (key == 'w' || key == 'W') direction = DIR_UP;
+    else if (key == 'a' || key == 'A') direction = DIR_LEFT;
+    else if (key == 's' || key == 'S') direction = DIR_DOWN;
+    else if (key == 'd' || key == 'D') direction = DIR_RIGHT;
+    else if (key == 'e' || key == 'E') direction = DIR_GETHELP;
+    else if (key == 'q' || key == 'Q') direction = DIR_FINISH;
+    else direction = DIR_ERROR;
 
     if (inverted) direction = invert_direction(direction);
-    if (direction == ERROR) {
+    if (direction == DIR_ERROR) {
         printf("You donkey, how hard is it to follow instructions! Try again!\n");
         goto GET_CHAR_LOOP;
     }
@@ -60,10 +60,10 @@ GET_CHAR_LOOP:
 
 char* get_direction_string(Dir d) {
     switch (d) {
-        case UP:    return "Up";
-        case RIGHT: return "Right";
-        case DOWN:  return "Down";
-        case LEFT:  return "Left";
+        case DIR_UP:    return "Up";
+        case DIR_RIGHT: return "Right";
+        case DIR_DOWN:  return "Down";
+        case DIR_LEFT:  return "Left";
         default:    return "-";
     }
 }
